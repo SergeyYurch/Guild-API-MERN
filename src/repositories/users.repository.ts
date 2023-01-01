@@ -1,10 +1,10 @@
-import {usersCollection} from "../adapters/dbAdapters";
+import {UserModel, usersCollection} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {UserEntity} from "../services/entities/user.entity";
 import {UsersRepositoryInterface} from "./interfaces/users.repository.interface";
-import {UserInDbEntity} from "./entitiesRepository/user-in-db.entity";
+import {UserEntityWithIdInterface} from "./repository-interfaces/user-entity-with-id.interface";
 
-const parseUserInDbEntity = (result: WithId<UserEntity>): UserInDbEntity => {
+const parseUserInDbEntity = (result: WithId<UserEntity>): UserEntityWithIdInterface => {
     console.log(' parseUserInDbEntity');
     return ({
         id: result._id.toString(),
@@ -24,16 +24,16 @@ const parseUserInDbEntity = (result: WithId<UserEntity>): UserInDbEntity => {
     });
 };
 
-export const usersRepository: UsersRepositoryInterface = {
-    async findUserByEmailOrLogin(loginOrEmail: string): Promise<UserInDbEntity | null> {
+export const usersRepository= {
+    async findUserByEmailOrLogin(loginOrEmail: string): Promise<UserEntityWithIdInterface | null> {
         console.log(`[findUserByEmailOrPassword]: loginOrEmail:${loginOrEmail}`);
-        const result = await usersCollection.findOne({$or: [{'accountData.email': loginOrEmail}, {'accountData.login': loginOrEmail}]});
+        const result = await UserModel.findOne({$or: [{'accountData.email': loginOrEmail}, {'accountData.login': loginOrEmail}]});
         if (!result) return null;
         return parseUserInDbEntity(result);
     },
-    async findUserByConfirmationCode(value: string): Promise<UserInDbEntity | null> {
+    async findUserByConfirmationCode(value: string): Promise<UserEntityWithIdInterface | null> {
         console.log(`[usersRepository]: findUser by confirmationCode`);
-        const result = await usersCollection.findOne({'emailConfirmation.confirmationCode': value});
+        const result = await UserModel.findOne({'emailConfirmation.confirmationCode': value});
         if (!result) return null;
         console.log(`[usersRepository]: findUser by confirmationCode - user find!`);
         return parseUserInDbEntity(result);
@@ -48,12 +48,7 @@ export const usersRepository: UsersRepositoryInterface = {
         const result = await usersCollection.deleteOne({_id: new ObjectId(id)});
         return result.acknowledged;
     },
-    async getUserById(id: string): Promise<UserInDbEntity | null> {
-        console.log(`[usersRepository]: getUserById ${id}`);
-        const result = await usersCollection.findOne({_id: new ObjectId(id)});
-        if (!result) return null;
-        return parseUserInDbEntity(result);
-    },
+
     async confirmEmailInDb(id: string): Promise<boolean> {
         const result = await usersCollection.updateOne(
             {_id: new ObjectId(id)},
