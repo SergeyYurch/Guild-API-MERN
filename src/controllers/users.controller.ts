@@ -22,6 +22,16 @@ const {createNewUser, deleteUserById, findUserByEmailOrLogin, getUserById} = use
 const {getAllUsers} = queryRepository;
 
 
+usersRouter.get('/:id',
+    async (req: RequestWithId, res: Response) => {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) return res.sendStatus(404);
+        const user = await getUserById(id);
+        if (!user) return res.sendStatus(404)
+        return res.status(204).send(user)
+    });
+
+
 usersRouter.post('/',
     authBasicMiddleware,
     validateUserInputModel(),
