@@ -9,7 +9,7 @@ export const accessAttemptCounter = async (req: Request, res: Response, next: Ne
     console.log(`[accessAttemptCounter]-middleware run by ip: ${ip}, for url: ${endpoint}`);
     const attemptsCount = await accessAttemptRepository.getNumberOfAttemptsByIp(ip, endpoint);
     if (attemptsCount > 4) {
-        console.log(`[accessAttemptCounter] for ip: ${ip} & url: ${endpoint} attempt limit exceeded`);
+        console.log(`[accessAttemptCounter] for ip: ${ip} & url: ${endpoint} AttemptCounter=${attemptsCount} attempt limit exceeded`);
         return res.sendStatus(429);
     }
     const result = await accessAttemptRepository.saveAttempt(ip, endpoint);
