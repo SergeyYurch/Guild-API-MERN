@@ -1,8 +1,15 @@
-import {blogsCollection, commentsCollection, postsCollection, usersCollection} from "../adapters/dbAdapters";
-import {ObjectId} from "mongodb";
+import {
+    BlogModel,
+    blogsCollection,
+    CommentModel,
+    commentsCollection, PostModel,
+    postsCollection,
+    UserModel,
+    usersCollection
+} from "../adapters/dbAdapters";
+import {ObjectId, WithId} from "mongodb";
 import {
     PaginatorOptionInterface,
-    QueryRepositoryInterface
 } from "./interfaces/query.repository.interface";
 import {BlogViewModelDto} from "../controllers/dto/blogViewModel.dto";
 import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
@@ -10,10 +17,12 @@ import {PaginatorDto} from "../controllers/dto/paginatorDto";
 import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
 import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
+import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
+import {UserEntity} from '../services/entities/user.entity';
 
-export const queryRepository: QueryRepositoryInterface = {
+export const queryRepository = {
     getCommentById: async (id: string): Promise<CommentViewModelDto | null> => {
-        const result = await commentsCollection.findOne({_id: new ObjectId(id)});
+        const result = await CommentModel.findById(id);
         if (!result) return null;
         return {
             id: result._id.toString(),
@@ -27,14 +36,15 @@ export const queryRepository: QueryRepositoryInterface = {
         userId: string,
         paginatorOption: PaginatorOptionInterface
     ): Promise<PaginatorDto<CommentViewModelDto>> => {
-        // console.log(`[findUserByEmailOrLogin]: loginOrEmail:${loginOrEmail}`);
+        console.log(`[queryRepository]: findAllCommentsByUserId:${userId}`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-        const totalCount = await commentsCollection.count({userId});
-        const result = await commentsCollection.find({userId})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+
+        const totalCount = await CommentModel.countDocuments({userId});
+        const result = await CommentModel.find({userId})
+            .sort({[sortBy]: sortDirection })
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .toArray();
+            .limit(pageSize);
+
         const items: CommentViewModelDto[] = result.map(e => ({
             id: e._id.toString(),
             content: e.content,
@@ -54,14 +64,13 @@ export const queryRepository: QueryRepositoryInterface = {
         postId: string,
         paginatorOption: PaginatorOptionInterface
     ): Promise<PaginatorDto<CommentViewModelDto>> => {
-        // console.log(`[findUserByEmailOrPassword]: loginOrEmail:${loginOrEmail}`);
+        console.log(`[queryRepository]: findAllCommentsByPostId:${postId}`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-        const totalCount = await commentsCollection.count({postId});
-        const result = await commentsCollection.find({postId})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+        const totalCount = await CommentModel.countDocuments({postId});
+        const result = await CommentModel.find({postId})
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
         const items: CommentViewModelDto[] = result.map(e => ({
             id: e._id.toString(),
             content: e.content,
@@ -77,7 +86,6 @@ export const queryRepository: QueryRepositoryInterface = {
             items
         };
     },
-
     getAllBlogs: async (
         searchNameTerm: string | null = null,
         paginatorOption: PaginatorOptionInterface
@@ -85,12 +93,11 @@ export const queryRepository: QueryRepositoryInterface = {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllBlogs`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const filter = searchNameTerm ? {'name': {$regex: searchNameTerm, $options: 'i'}} : {};
-        const totalCount = await blogsCollection.count(filter);
-        const result = await blogsCollection.find(filter)
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+        const totalCount = await BlogModel.countDocuments(filter);
+        const result = await BlogModel.find(filter)
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
         const items: BlogViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 name: e.name,
@@ -107,21 +114,18 @@ export const queryRepository: QueryRepositoryInterface = {
             items
         };
     },
-
     getPostsForBlog: async (
         blogId: string,
         paginatorOption: PaginatorOptionInterface
     ): Promise<PaginatorDto<PostViewModelDto>> => {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostsForBlog ${blogId}.`);
-
         const filter = {blogId: blogId};
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-        const totalCount = await postsCollection.count(filter);
-        const result = await postsCollection.find(filter)
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+        const totalCount = await PostModel.countDocuments(filter);
+        const result = await PostModel.find(filter)
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
         const items: PostViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 title: e.title,
@@ -140,10 +144,9 @@ export const queryRepository: QueryRepositoryInterface = {
             items
         };
     },
-
     getBlogById: async (id: string): Promise<BlogViewModelDto | null> => {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getBlogById`);
-        const result = await blogsCollection.findOne({_id: new ObjectId(id)});
+        const result = await BlogModel.findById(id);
         if (!result) return null;
         const {name, websiteUrl, description, createdAt, _id} = result;
         return {
@@ -154,18 +157,16 @@ export const queryRepository: QueryRepositoryInterface = {
             createdAt
         };
     },
-
     getAllPosts: async (
         paginatorOption: PaginatorOptionInterface
     ): Promise<PaginatorDto<PostViewModelDto>> => {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllPosts`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-        const totalCount = await postsCollection.count({});
-        const result = await postsCollection.find({})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+        const totalCount = await PostModel.countDocuments({});
+        const result = await PostModel.find({})
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
         const items: PostViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 title: e.title,
@@ -186,7 +187,7 @@ export const queryRepository: QueryRepositoryInterface = {
     },
     getPostById: async (id: string): Promise<PostViewModelDto | null> => {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostById`);
-        const result = await postsCollection.findOne({_id: new ObjectId(id)});
+        const result = await PostModel.findById(id)
         if (!result) return null;
         const {title, shortDescription, content, blogId, blogName, createdAt, _id} = result;
         return {
@@ -210,15 +211,12 @@ export const queryRepository: QueryRepositoryInterface = {
         let filter = {};
         if (searchLoginTerm) searchQuery.push({login: {$regex: searchLoginTerm, $options: 'i'}});
         if (searchEmailTerm) searchQuery.push({email: {$regex: searchEmailTerm, $options: 'i'}});
-        console.log('searchQuery=============================');
-        console.log(searchQuery);
         if (searchQuery.length > 0) filter = {$or: searchQuery};
-        const totalCount = await usersCollection.count(filter);
-        const result = await usersCollection.find(filter)
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+        const totalCount = await UserModel.countDocuments(filter);
+        const result = await UserModel.find(filter)
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
         const items: UserViewModelDto[] = result.map(e => ({
             id: e._id.toString(),
             login: e.accountData.login,
@@ -232,5 +230,31 @@ export const queryRepository: QueryRepositoryInterface = {
             totalCount,
             items
         };
+    },
+    async getUserById(id: string): Promise<UserEntityWithIdInterface | null> {
+        console.log(`[queryRepository]: getUserById ${id}`);
+        const result = await UserModel.findById(id);
+        console.log(`[queryRepository]: getUserById ${id} `);
+        if (!result) return null;
+        return this.parseUserInDbEntity(result);
+    },
+    parseUserInDbEntity(result: WithId<UserEntity>): UserEntityWithIdInterface {
+        console.log('[queryRepository]/parseUserInDbEntity');
+        return ({
+            id: result._id.toString(),
+            accountData: {
+                login: result.accountData.login,
+                email: result.accountData.email,
+                passwordHash: result.accountData.passwordHash,
+                passwordSalt: result.accountData.passwordSalt,
+                createdAt: result.accountData.createdAt
+            },
+            emailConfirmation: {
+                confirmationCode: result.emailConfirmation.confirmationCode,
+                expirationDate: result.emailConfirmation.expirationDate,
+                isConfirmed: result.emailConfirmation.isConfirmed,
+                dateSendingConfirmEmail: result.emailConfirmation.dateSendingConfirmEmail
+            }
+        });
     }
 };
