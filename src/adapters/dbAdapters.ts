@@ -5,15 +5,24 @@ import {UserEntity} from "../services/entities/user.entity";
 import {CommentEntity} from "../services/entities/comment.entity";
 import * as dotenv from "dotenv";
 import {RefreshTokenEntity} from "../services/entities/refresh-token.entity";
-import {AccessAttemptInDb} from "../repositories/entitiesRepository/access-attempt-in-db.interface";
-import {DbAuthSessionInterface} from '../repositories/entitiesRepository/db-auth-session.interface';
+import {AccessAttemptInDb} from "../repositories/repository-interfaces/access-attempt-in-db.interface";
+import {DbAuthSessionInterface} from '../repositories/repository-interfaces/db-auth-session.interface';
+import mongoose from 'mongoose';
+import { userSchema} from '../repositories/schemas/user.schema';
+import {blogSchema} from '../repositories/schemas/blog.schema';
+import {postSchema} from '../repositories/schemas/post.schema';
+import {commentSchema} from '../repositories/schemas/comment.schema';
+import {sessionSchema} from '../repositories/schemas/session.schema';
+import {accessAttemptSchema} from '../repositories/schemas/access-attempt.schema';
+
 dotenv.config();
 
 const mongoUri = process.env.MONGO_URI
-if (!mongoUri){
+const dbName = process.env.DB_NAME
+if (!mongoUri || !dbName){
     throw new Error('!!!Mongo URI does not found')
 }
-const client = new MongoClient(mongoUri)
+const client = new MongoClient(mongoUri+"/"+dbName) //+"?retryWrites=true&w=majority\n"
 const dbAdapters = client.db();
 export const blogsCollection = dbAdapters.collection<BlogEntity>('blogs')
 export const postsCollection = dbAdapters.collection<PostEntity>('posts')
@@ -23,13 +32,30 @@ export const tokensBlackListCollection = dbAdapters.collection<RefreshTokenEntit
 export const deviceAuthSessionsCollection = dbAdapters.collection<DbAuthSessionInterface>('device_auth_sessions')
 export const accessAttemptCollection = dbAdapters.collection<AccessAttemptInDb>('access_attempt')
 
+
+//Mongoose Models
+export const BlogModel = mongoose.model('Blog', blogSchema)
+export const PostModel = mongoose.model('Post', postSchema)
+export const UserModel = mongoose.model('User', userSchema)
+export const CommentModel = mongoose.model('Comment', commentSchema)
+export const SessionModel = mongoose.model('Session', sessionSchema)
+export const AccessAttemptModel = mongoose.model('AccessAttempt', accessAttemptSchema)
+
+
+
+
+
+
 export async function runDB() {
     try{
+        await mongoose.connect(mongoUri + '/' + dbName);
         await client.connect();
         await client.db('guildDB').command({ping: 1})
         console.log("Mongo server connected successfully");
     } catch {
         console.log("Can't connect to DB");
-        await client.close()
+        // await client.close()
+        await mongoose.disconnect();
+
     }
 }
