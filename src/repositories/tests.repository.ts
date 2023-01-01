@@ -2,28 +2,26 @@ import {
     RepositoryInterface
 } from "./interfaces/repository.interface";
 import {
-    accessAttemptCollection,
-    blogsCollection,
-    commentsCollection,
-    deviceAuthSessionsCollection,
-    postsCollection,
-    usersCollection
+    AccessAttemptModel, BlogModel,
+    CommentModel,
+    SessionModel, UserModel,
+    PostModel,
 } from "../adapters/dbAdapters";
 
 export const testsRepository: RepositoryInterface = {
     dataBaseClear: async (): Promise<boolean> => {
         console.log(`[repository]:start dataBaseClear`);
-        const resultBlogs = await blogsCollection.deleteMany({});
-        const resultPosts = await postsCollection.deleteMany({});
-        const resultUsers = await usersCollection.deleteMany({});
-        const resultComments = await commentsCollection.deleteMany({});
-        const resultDeviceAuthSession = await deviceAuthSessionsCollection.deleteMany({});
-        const resultAccessAttempt = await accessAttemptCollection.deleteMany({});
+        const resultBlogs = await BlogModel.deleteMany({});
+        const resultPosts = await PostModel.deleteMany({});
+        const resultUsers = await UserModel.deleteMany({});
+        const resultComments = await CommentModel.deleteMany({});
+        const resultDeviceAuthSession = await SessionModel.deleteMany({});
+        const resultAccessAttempt = await AccessAttemptModel.deleteMany({});
         return resultBlogs.acknowledged
             && resultPosts.acknowledged
             && resultUsers.acknowledged
             && resultComments.acknowledged
-            &&resultDeviceAuthSession.acknowledged
+            && resultDeviceAuthSession.acknowledged
             && resultAccessAttempt.acknowledged;
     }
 
