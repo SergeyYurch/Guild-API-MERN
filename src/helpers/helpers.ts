@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {PaginatorOptionInterface} from "../repositories/interfaces/query.repository.interface";
 import bcrypt from "bcrypt";
-import {UserInDbEntity} from "../repositories/entitiesRepository/user-in-db.entity";
+import {UserEntityWithIdInterface} from "../repositories/repository-interfaces/user-entity-with-id.interface";
 import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {v4 as uuidv4} from "uuid";
 import add from "date-fns/add";
@@ -31,7 +31,7 @@ export const generateHashSalt = async (): Promise<string> => {
     return await bcrypt.genSalt(+salt_base);
 };
 
-export const parseUserViewModel = (user: UserInDbEntity): UserViewModelDto => {
+export const parseUserViewModel = (user: UserEntityWithIdInterface): UserViewModelDto => {
     return {
         id: user.id,
         login: user.accountData.login,
@@ -58,7 +58,7 @@ export const setRefreshTokenToCookie = (res: Response, refreshToken: string) => 
         refreshToken,
         {
             expires: getCookieRefreshTokenExpire(),
-            secure: true,
+            // secure: true,
             httpOnly: true
         }
     );
