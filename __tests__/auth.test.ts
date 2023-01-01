@@ -2,10 +2,11 @@ import request from 'supertest';
 import {app} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
 import {usersRepository} from "../src/repositories/users.repository";
-import {UserInDbEntity} from '../src/repositories/entitiesRepository/user-in-db.entity';
+import {UserEntityWithIdInterface} from '../src/repositories/repository-interfaces/user-entity-with-id.interface';
 import {usersService} from '../src/services/users.service';
 import {UserViewModelDto} from '../src/controllers/dto/userViewModel.dto';
 import {sub} from 'date-fns';
+import {queryRepository} from '../src/repositories/query.repository';
 
 
 const user1 = {
@@ -361,7 +362,7 @@ describe('HOST/auth/registration-confirmation ', () => {
     let user2RefreshToken = '';
     let confirmationCode = '';
     let user: UserViewModelDto | null;
-    let userInDb: UserInDbEntity | null;
+    let userInDb: UserEntityWithIdInterface | null;
 
     beforeAll(async () => {
         //cleaning dataBase
@@ -375,7 +376,7 @@ describe('HOST/auth/registration-confirmation ', () => {
 
         user = await usersService.findUserByEmailOrLogin('user1');
         user1Id = user!.id;
-        userInDb = await usersRepository.getUserById(user1Id);
+        userInDb = await queryRepository.getUserById(user1Id);
         confirmationCode = userInDb!.emailConfirmation.confirmationCode;
     });
 
@@ -440,7 +441,7 @@ describe('HOST/auth/registration-email-resending', () => {
     let user2RefreshToken = '';
     let confirmationCode = '';
     let user: UserViewModelDto | null;
-    let userInDb: UserInDbEntity | null;
+    let userInDb: UserEntityWithIdInterface | null;
 
     beforeAll(async () => {
         //cleaning dataBase
@@ -454,7 +455,7 @@ describe('HOST/auth/registration-email-resending', () => {
 
         user = await usersService.findUserByEmailOrLogin('user1');
         user1Id = user!.id;
-        userInDb = await usersRepository.getUserById(user1Id);
+        userInDb = await queryRepository.getUserById(user1Id);
         confirmationCode = userInDb!.emailConfirmation.confirmationCode;
     });
 
