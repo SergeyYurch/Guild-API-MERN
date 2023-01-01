@@ -8,6 +8,7 @@ import {
     parseUserViewModel
 } from "../helpers/helpers";
 import {emailManager} from "../managers/emailManager";
+import {queryRepository} from '../repositories/query.repository';
 
 export const usersService = {
     test (){
@@ -22,7 +23,7 @@ export const usersService = {
         return parseUserViewModel(result);
     },
     async getUserById(id: string): Promise<UserViewModelDto | null> {
-        const result = await usersRepository.getUserById(id);
+        const result = await queryRepository.getUserById(id);
         if (!result) return null;
         return parseUserViewModel(result);
     },
@@ -49,7 +50,7 @@ export const usersService = {
         };
         const newUserId = await usersRepository.createNewUser(newUser);
         if (!newUserId) return null;
-        const user = await usersRepository.getUserById(newUserId);
+        const user = await queryRepository.getUserById(newUserId);
         if (!user) return null;
         if (confirmed) return parseUserViewModel(user);
         await emailManager.sendEmailConfirmation(user.accountData.email, user.emailConfirmation.confirmationCode);
