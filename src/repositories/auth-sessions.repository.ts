@@ -1,23 +1,26 @@
 import {AuthSessionEntity} from "../services/entities/auth-session.entity";
-import {deviceAuthSessionsCollection} from "../adapters/dbAdapters";
+import {deviceAuthSessionsCollection, SessionModel} from "../adapters/dbAdapters";
 import {ObjectId} from "mongodb";
-import {AuthSessionInDb} from "./entitiesRepository/auth-session-in-db.interface";
+import {AuthSessionInDb} from "./repository-interfaces/auth-session-in-db.interface";
 
 
 export const authSessionsRepository = {
     async cleanAuthSessionsCollection(): Promise<void> {
+        //Чистим базу - Удаляем все заэкспайреные сессии
         console.log(`[authSessionsRepository]/cleanAuthSessionsCollection `);
-        // await deviceAuthSessionsCollection.deleteMany({
-        //     expiresDate: {$lt: new Date()}
-        // });
+        await SessionModel.deleteMany({
+            expiresDate: {$lt: new Date().getTime()}
+        });
     },
     async saveDeviceAuthSession(session: AuthSessionEntity) {
         //сохраняем сессию в базу и возвращаем true если операция была успешна
         console.log(`[deviceAuthSessionsRepository]:saveDeviceAuthSession`);
+        console.log(session);
+
         await this.cleanAuthSessionsCollection();
         const {deviceId, ip, expiresDate, userId, lastActiveDate, title} = session;
-        return deviceAuthSessionsCollection.insertOne({
-            _id: new ObjectId(deviceId),
+        return SessionModel.create({
+            deviceId,
             title,
             lastActiveDate,
             userId,
@@ -25,26 +28,21 @@ export const authSessionsRepository = {
             expiresDate
         });
     },
-    async updateDeviceAuthSession(session: AuthSessionEntity) {
+    async updateDeviceAuthSession(session: AuthSessionEntity): Promise<boolean> {
         //обновляем сессию в базе и возвращаем true если операция была успешна
         console.log(`[deviceAuthSessionsRepository]:updateDeviceAuthSession: ${session.deviceId}`);
         await this.cleanAuthSessionsCollection();
         const {deviceId, expiresDate, lastActiveDate} = session;
-        return deviceAuthSessionsCollection.updateOne({_id: new ObjectId(deviceId)}, {
-            $set: {
-                lastActiveDate,
-                expiresDate
-            }
-        });
+        const result = await SessionModel.updateOne(
+            {deviceId},
+            {lastActiveDate,expiresDate});
+        return result.acknowledged;
     },
 
-    async getDeviceAuthSessionById(deviceId: string): Promise<AuthSessionInDb | null> {
+    async getDeviceAuthSessionByDeviceId(deviceId: string): Promise<AuthSessionInDb | null> {
         console.log(`[deviceAuthSessionsRepository]: getDeviceAuthSessionById:${deviceId}`);
         await this.cleanAuthSessionsCollection();
-        const result = await deviceAuthSessionsCollection.findOne({
-            _id: new ObjectId(deviceId)
-        });
-        console.log(`[deviceAuthSessionsRepository]: getDeviceAuthSessionById  result:${result}`);
+        const result = await SessionModel.findOne({deviceId});
         if (!result) return null;
         return ({
             ip: result.ip,
@@ -56,10 +54,10 @@ export const authSessionsRepository = {
     },
     async getAllSessionByUserId(userId: string): Promise<AuthSessionInDb[]> {
         console.log(`[deviceAuthSessionsRepository]: getAllSessionByUserId: ${userId}`);
-        // await this.cleanAuthSessionsCollection();
-        const sessions = await deviceAuthSessionsCollection.find({
+        await this.cleanAuthSessionsCollection();
+        const sessions = await SessionModel.find({
             userId
-        }).toArray();
+        })
         return sessions.map(s => ({
             ip: s.ip,
             title: s.title,
@@ -71,26 +69,15 @@ export const authSessionsRepository = {
     async deleteSessionExcludeId(id: string, userId: string): Promise<boolean> {
         console.log(`[deviceAuthSessionsRepository]: deleteSessionExcludeById`);
         await this.cleanAuthSessionsCollection();
-        const result = await deviceAuthSessionsCollection.deleteMany({
+        const result = await SessionModel.deleteMany({
             $and: [{userId}, {_id: {$ne: new ObjectId(id)}}]
         });
-
-        console.log(`[deviceAuthSessionsRepository]: deleteSessionExcludeById result: ${result.acknowledged}`);
         return result.acknowledged;
-    },
-    async getPreviousUserSessionFromThisDevice(userId: string, title: string): Promise<string | null> {
-        console.log(`[deviceAuthSessionsRepository]: checkPreviousUserSessionFromThisDevice`);
-        await this.cleanAuthSessionsCollection();
-        const result = await deviceAuthSessionsCollection.findOne({
-            userId, title
-        });
-        console.log(`[deviceAuthSessionsRepository]: checkPreviousUserSessionFromThisDevice result: ${result?._id.toString()}`);
-        return result?._id.toString() || null;
     },
     async deleteSessionById(deviceId: string): Promise<boolean> {
         console.log(`[deviceAuthSessionsRepository]: deleteSessionById: ${deviceId}`);
-        const result = await deviceAuthSessionsCollection.deleteOne({
-            _id: new ObjectId(deviceId),
+        const result = await SessionModel.deleteOne({
+            deviceId
         });
         return result.acknowledged;
     },
