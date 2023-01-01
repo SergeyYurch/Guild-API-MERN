@@ -14,8 +14,9 @@ import {jwtService} from "../utils/jwt-service";
 import {UserTokensPairInterface} from "./entities/user-tokens-pair.interface";
 import {authSessionsRepository} from "../repositories/auth-sessions.repository";
 import {DeviceSessionViewModelDto} from "../controllers/dto/deviceSessionViewModel.dto";
-import {AuthSessionInDb} from "../repositories/entitiesRepository/auth-session-in-db.interface";
+import {AuthSessionInDb} from "../repositories/repository-interfaces/auth-session-in-db.interface";
 import {ObjectId} from 'mongodb';
+import {queryRepository} from '../repositories/query.repository';
 
 export const authService = {
 
@@ -44,7 +45,7 @@ export const authService = {
     },
     async resendingEmail(id: string): Promise<boolean> {
         console.log(`[usersService]:resendingEmail `);
-        const user = await usersRepository.getUserById(id);
+        const user = await queryRepository.getUserById(id);
         if (!user) return false;
         if (user.emailConfirmation.isConfirmed) return false;
         const newConfirmationCode = getConfirmationCode();
@@ -81,7 +82,7 @@ export const authService = {
         const accessToken = await jwtService.createAccessJWT(userId);
         const refreshToken = await jwtService.createRefreshJWT(userId, deviceId, ip);
         const {lastActiveDate, expiresDate} = jwtService.getSessionInfoByJwtToken(refreshToken);
-        await authSessionsRepository.updateDeviceAuthSession({
+        const result = await authSessionsRepository.updateDeviceAuthSession({
             deviceId,
             ip,
             title,
@@ -89,6 +90,7 @@ export const authService = {
             lastActiveDate,
             expiresDate
         });
+        if(!result) return null
         return {accessToken, refreshToken};
     },
     async userLogout(refreshToken: string): Promise<boolean> {
@@ -99,7 +101,7 @@ export const authService = {
     },
     async checkDeviceSession(deviceId:string, userId:string, lastActiveDate:string): Promise<{status:string, message:string}> {
         console.log(`[authService] checkDeviceSession run...`);
-        const sessionInDb = await authSessionsRepository.getDeviceAuthSessionById(deviceId);
+        const sessionInDb = await authSessionsRepository.getDeviceAuthSessionByDeviceId(deviceId);
         if (!sessionInDb) return {status: 'error', message: 'sessionInDb not find'};
         console.log(`[authService] checkDeviceSession: sessionInDb.lastActiveDate:${sessionInDb.lastActiveDate}`);
         console.log(`[authService] checkDeviceSession: sessionInTOKEN.lastActiveDate:${lastActiveDate}`);
@@ -119,7 +121,7 @@ export const authService = {
         }));
     },
     async getAuthSessionById(deviceId: string): Promise<AuthSessionInDb | null> {
-        return await authSessionsRepository.getDeviceAuthSessionById(deviceId);
+        return await authSessionsRepository.getDeviceAuthSessionByDeviceId(deviceId);
     },
     async deleteAllSessionExcludeCurrent(refreshToken: string): Promise<boolean> {
         console.log(`[authService]/deleteAllSessionExcludeCurrent started`);
@@ -127,7 +129,7 @@ export const authService = {
         console.log(`[authService]/deleteAllSessionExcludeCurrent deviceId:${userInfoFromToken?.deviceId}`);
 
         if (!userInfoFromToken) return false;
-        const sessionInDb = await authSessionsRepository.getDeviceAuthSessionById(userInfoFromToken.deviceId);
+        const sessionInDb = await authSessionsRepository.getDeviceAuthSessionByDeviceId(userInfoFromToken.deviceId);
         console.log(`[authService]/deleteAllSessionExcludeCurrent userId:${sessionInDb?.userId}`);
 
         if (!sessionInDb) return false;
