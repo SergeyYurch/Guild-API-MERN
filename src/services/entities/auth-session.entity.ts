@@ -1,4 +1,3 @@
-import {ObjectId} from 'mongodb';
 
 export interface AuthSessionEntity {
     deviceId:string;
