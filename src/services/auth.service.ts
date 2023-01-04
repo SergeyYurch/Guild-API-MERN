@@ -4,7 +4,7 @@ import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {
     generatePassHash,
     getConfirmationCode,
-    getConfirmationEmailExpirationDate,
+    getConfirmationEmailExpirationDate, getRecoveryPasswordCodeExpirationDate,
     parseUserViewModel
 } from "../helpers/helpers";
 import {emailManager} from "../managers/emailManager";
@@ -43,6 +43,24 @@ export const authService = {
         if (!user) return false;
         return await usersRepository.confirmEmailInDb(user.id);
     },
+    async passwordRecovery(email: string) {
+        console.log(`[usersService]:passwordRecovery `);
+        const user = await usersRepository.findUserByEmailOrLogin(email);
+        if (!user) return;
+        await usersRepository.confirmEmailInDb(user.id);
+        const newConfirmationCode = getConfirmationCode();
+        const newExpirationDate = getRecoveryPasswordCodeExpirationDate();
+        const resend: SentMessageInfo = await emailManager.sendEmailPasswordRecoveryConfirmation(user.accountData.email, newConfirmationCode);
+        if (resend.accepted.length > 0) await usersRepository.saveSendingRecoveryPasswordEmail(user.id, newConfirmationCode, newExpirationDate);
+        return true;
+    },
+    async confirmPasswordRecovery(newPassword: string, recoveryCode: string) {
+        console.log(`[usersService]:confirmPasswordRecovery`);
+        const user = await usersRepository.findUserByPasswordConfirmationCode(recoveryCode);
+        if (!user) return false;
+        const passwordHash = generatePassHash(newPassword, user.accountData.passwordSalt);
+        return  await usersRepository.confirmRecoveryPassword(user.id, passwordHash);
+    },
     async resendingEmail(id: string): Promise<boolean> {
         console.log(`[usersService]:resendingEmail `);
         const user = await queryRepository.getUserById(id);
@@ -61,9 +79,10 @@ export const authService = {
         if (resend.accepted.length > 0) await usersRepository.updateSendingConfirmEmail(id, newConfirmationCode, newExpirationDate);
         return true;
     },
+
     async userLogin(userId: string, ip: string, title: string): Promise<UserTokensPairInterface | null> {
         console.log(`[authService]/userLogin  started`);
-        const deviceId = new ObjectId().toString()
+        const deviceId = new ObjectId().toString();
         const accessToken = await jwtService.createAccessJWT(userId);
         const refreshToken = await jwtService.createRefreshJWT(userId, deviceId, ip);
         const {lastActiveDate, expiresDate} = jwtService.getSessionInfoByJwtToken(refreshToken);
@@ -77,7 +96,7 @@ export const authService = {
         });
         return {accessToken, refreshToken};
     },
-    async userRefresh(userId: string, deviceId: string, ip:string, title:string): Promise<UserTokensPairInterface | null> {
+    async userRefresh(userId: string, deviceId: string, ip: string, title: string): Promise<UserTokensPairInterface | null> {
         console.log(`[authService]/userRefresh  started`);
         const accessToken = await jwtService.createAccessJWT(userId);
         const refreshToken = await jwtService.createRefreshJWT(userId, deviceId, ip);
@@ -90,7 +109,7 @@ export const authService = {
             lastActiveDate,
             expiresDate
         });
-        if(!result) return null
+        if (!result) return null;
         return {accessToken, refreshToken};
     },
     async userLogout(refreshToken: string): Promise<boolean> {
@@ -99,17 +118,17 @@ export const authService = {
         if (!userInfo) return false;
         return authSessionsRepository.deleteSessionById(userInfo.deviceId);
     },
-    async checkDeviceSession(deviceId:string, userId:string, lastActiveDate:string): Promise<{status:string, message:string}> {
+    async checkDeviceSession(deviceId: string, userId: string, lastActiveDate: string): Promise<{ status: string, message: string }> {
         console.log(`[authService] checkDeviceSession run...`);
         const sessionInDb = await authSessionsRepository.getDeviceAuthSessionByDeviceId(deviceId);
         if (!sessionInDb) return {status: 'error', message: 'sessionInDb not find'};
         console.log(`[authService] checkDeviceSession: sessionInDb.lastActiveDate:${sessionInDb.lastActiveDate}`);
         console.log(`[authService] checkDeviceSession: sessionInTOKEN.lastActiveDate:${lastActiveDate}`);
-        console.log(`[authService] checkDeviceSession: RESULT:${lastActiveDate===sessionInDb.lastActiveDate}`);
+        console.log(`[authService] checkDeviceSession: RESULT:${lastActiveDate === sessionInDb.lastActiveDate}`);
 
-        if (sessionInDb.lastActiveDate !== lastActiveDate) return {status: 'error', message: 'lastActiveDate is wrong'}
-        if (sessionInDb.userId !== userId) return {status: 'error', message: 'userId is wrong'}
-        return  {status: 'ok', message: 'ok'};
+        if (sessionInDb.lastActiveDate !== lastActiveDate) return {status: 'error', message: 'lastActiveDate is wrong'};
+        if (sessionInDb.userId !== userId) return {status: 'error', message: 'userId is wrong'};
+        return {status: 'ok', message: 'ok'};
     },
     async getAllSessionByUserId(userId: string): Promise<DeviceSessionViewModelDto[]> {
         const sessions = await authSessionsRepository.getAllSessionByUserId(userId);
