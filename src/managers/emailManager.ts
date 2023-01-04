@@ -9,5 +9,14 @@ export const emailManager = {
         const app_host = process.env.APP_HOST || 'http://localhost:5001'
         const message = `<a href="${app_host}/auth/registration-confirmation\?code=${confirmationCode}">Confirm email</a>`
         return await emailAdapter.sendEmail(email, subject, message)
+    },
+    async sendEmailPasswordRecoveryConfirmation (email:string, confirmationCode:string){
+        console.log(`emailManager]:sendEmailPasswordRecoveryConfirmation to ${email}`);
+        const subject = 'Password recovery confirm'
+        const message = ` <h1>Password recovery</h1>
+       <p>To finish password recovery please follow the link below:
+          <a href="https://somesite.com/password-recovery?recoveryCode=${confirmationCode}">recovery password</a>
+      </p>`
+        return await emailAdapter.sendEmail(email, subject, message)
     }
 }
