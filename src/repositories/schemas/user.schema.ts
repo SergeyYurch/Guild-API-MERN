@@ -14,5 +14,11 @@ export const userSchema = new Schema<UserEntity>({
         expirationDate: Date,
         isConfirmed: Boolean,
         dateSendingConfirmEmail: [Date]
-    }
+    },
+    passwordRecoveryInformation: {
+        type:{
+            confirmationCode: String,
+            expirationDate: Date
+        },
+        default:null}
 });
