@@ -7,9 +7,15 @@ import {v4 as uuidv4} from "uuid";
 import add from "date-fns/add";
 import * as dotenv from "dotenv";
 import hash from "hash.js";
-import {CONFIRM_EMAIL_LIFE_PERIOD, COOKIE_LIFE_PERIOD} from '../settings-const';
+import {CONFIRM_EMAIL_LIFE_PERIOD, COOKIE_LIFE_PERIOD, RECOVERY_PASSWORD_CODE_LIFE_PERIOD} from '../settings-const';
 
 dotenv.config();
+
+const delay = async (ms: number) => {
+    return new Promise <void>((resolve, reject) => {
+        setTimeout(()=>resolve(), ms)
+    })
+}
 
 export const parseQueryPaginator = (req: Request): PaginatorOptionInterface => {
     return {
@@ -45,6 +51,11 @@ export const getConfirmationCode = () => uuidv4();
 export const getConfirmationEmailExpirationDate = () => add(
     new Date(),
     {[CONFIRM_EMAIL_LIFE_PERIOD.units]: CONFIRM_EMAIL_LIFE_PERIOD.amount}
+);
+
+export const getRecoveryPasswordCodeExpirationDate = () => add(
+    new Date(),
+    {[RECOVERY_PASSWORD_CODE_LIFE_PERIOD.units]: RECOVERY_PASSWORD_CODE_LIFE_PERIOD.amount}
 );
 
 export const getCookieRefreshTokenExpire = () => add(
