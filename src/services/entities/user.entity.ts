@@ -11,5 +11,9 @@ export interface UserEntity {
         expirationDate: Date
         isConfirmed: boolean
         dateSendingConfirmEmail: Date[]
+    },
+    passwordRecoveryInformation: null | {
+        confirmationCode: string
+        expirationDate: Date
     }
 }
