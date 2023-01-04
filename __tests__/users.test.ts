@@ -1,5 +1,10 @@
 import request from 'supertest';
 import {app} from "../src/app";
+import * as dotenv from 'dotenv';
+import mongoose from 'mongoose';
+dotenv.config();
+const mongoUri = process.env.MONGO_URI
+const dbName = process.env.DB_NAME
 
 const user1 = {
     login: "user1",
@@ -14,10 +19,17 @@ const user2 = {
 
 describe('POST: /users create new user', () => {
     beforeAll(async () => {
+        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
     });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
+        console.log('????????????????????????????????');
         await request(app)
             .post('/users')
             .send(user1)
@@ -43,7 +55,7 @@ describe('POST: /users create new user', () => {
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
                 password: "password1",
-                email: "email1@gmail.com"
+                email: "email221@gmail.com"
             })
             .expect(400);
 
@@ -75,6 +87,7 @@ describe('POST: /users create new user', () => {
 
 describe('GET: /users get all users', () => {
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -90,6 +103,10 @@ describe('GET: /users get all users', () => {
             .send(user2);
 
     });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
     it('should return code 401 for unauthorized user', async () => {
         await request(app)
             .post('/users')
@@ -103,7 +120,7 @@ describe('GET: /users get all users', () => {
 
         expect(users.body.totalCount).toBe(2)
 
-        expect(users.body.items[1]).toEqual(
+        expect(users.body.items[0]).toEqual(
             {
                 id: expect.any(String),
                 login: 'user1',
@@ -111,7 +128,7 @@ describe('GET: /users get all users', () => {
                 createdAt: expect.any(String),
             });
 
-        expect(users.body.items[0]).toEqual(
+        expect(users.body.items[1]).toEqual(
             {
                 id: expect.any(String),
                 login: 'user2',
@@ -155,6 +172,7 @@ describe('GET: /users get all users', () => {
 describe('DELETE:/users/id delete user by Id', () => {
     let id=''
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -166,7 +184,10 @@ describe('DELETE:/users/id delete user by Id', () => {
         id = newUser1.body.id;
 
     });
-
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
     it('should return code 401 for unauthorized user', async () => {
         await request(app)
             .delete(`/users/${id}`)
