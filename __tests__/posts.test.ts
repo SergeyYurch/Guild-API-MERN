@@ -1,6 +1,12 @@
 import request from 'supertest';
 import {app} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
+import * as dotenv from 'dotenv';
+import mongoose from 'mongoose';
+
+dotenv.config();
+const mongoUri = process.env.MONGO_URI
+const dbName = process.env.DB_NAME
 
 const blog1 = {
     name: 'blog1',
@@ -11,6 +17,7 @@ const blog1 = {
 describe('POST: /posts create new post', () => {
     let blogId = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -19,6 +26,11 @@ describe('POST: /posts create new post', () => {
             .auth('admin', 'qwerty', {type: "basic"})
             .send(blog1);
         blogId = newBlog1.body.id;
+    });
+
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
         await request(app)
@@ -187,6 +199,7 @@ describe('GET: /posts get all posts', () => {
 
     let blogId = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -197,7 +210,10 @@ describe('GET: /posts get all posts', () => {
             .send(blog1);
         blogId = newBlog1.body.id;
     });
-
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
     it('should return code 200 and array with 2 elements', async () => {
 
         //create  newPost1
@@ -254,6 +270,7 @@ describe('GET:/posts/id get post by ID', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -273,6 +290,10 @@ describe('GET:/posts/id get post by ID', () => {
             });
         id = newPost.body.id;
 
+    });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
     it('should return code 404 for incorrect ID', async () => {
         await request(app)
@@ -300,6 +321,7 @@ describe('PUT:/posts/id edit post by ID', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -319,6 +341,10 @@ describe('PUT:/posts/id edit post by ID', () => {
             });
         id = newPost.body.id;
 
+    });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
 
@@ -374,6 +400,7 @@ describe('DELETE:/posts/id delete', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -395,6 +422,10 @@ describe('DELETE:/posts/id delete', () => {
         id = newPost.body.id;
 
 
+    });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
         await request(app)
@@ -426,6 +457,7 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
     let accessToken = '';
     let token_ = '';
     beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -470,6 +502,10 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
         accessToken = auth.body.accessToken
         token_ = auth.body.accessToken
     });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
         await request(app)
             .post(`/posts/${postId}/comments`)
@@ -504,11 +540,12 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
 
     it('should return code 201 and newly created post', async () => {
         const comment = await request(app)
-            .post(`/posts/${userId}/comments`)
+            .post(`/posts/${postId}/comments`)
             .auth(accessToken, {type: 'bearer'})
             .send({
                 content: 'comment 1 comment 1 comment 1',
-            });
+            })
+            .expect(201);
         expect(comment.body).toEqual({
             id: expect.any(String),
             content: "comment 1 comment 1 comment 1",
