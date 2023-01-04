@@ -7,7 +7,7 @@ import {queryRepository} from '../repositories/query.repository';
 const {createNewUserComment, deleteUserCommentById, editComment} = commentsRepository;
 
 export const commentsService = {
-    async createUserComment({content}: CommentInputModelDto, userId: string, postId:string): Promise<CommentViewModelDto | null> {
+    async createUserComment(content: string, userId: string, postId:string): Promise<CommentViewModelDto | null> {
         const createdAt = new Date().toISOString();
         const user = await queryRepository.getUserById(userId);
         const userLogin = user!.accountData.login;
