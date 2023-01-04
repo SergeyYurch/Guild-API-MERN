@@ -9,10 +9,16 @@ import {
 } from "../helpers/helpers";
 import {emailManager} from "../managers/emailManager";
 import {queryRepository} from '../repositories/query.repository';
+import {UserEntityWithIdInterface} from '../repositories/repository-interfaces/user-entity-with-id.interface';
 
 export const usersService = {
-    test (){
-        console.log('!!!!!!!!!!!!!!!!!!!!!!!!test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    parseUserViewModel (user: UserEntityWithIdInterface): UserViewModelDto {
+        return {
+            id: user.id,
+            login: user.accountData.login,
+            email: user.accountData.email,
+            createdAt: user.accountData.createdAt.toISOString()
+        };
     },
     async deleteUserById(id: string): Promise<boolean> {
         return await usersRepository.deleteUserById(id);
@@ -20,12 +26,12 @@ export const usersService = {
     async findUserByEmailOrLogin(loginOrEmail: string): Promise<UserViewModelDto | null> {
         const result = await usersRepository.findUserByEmailOrLogin(loginOrEmail);
         if (!result) return null;
-        return parseUserViewModel(result);
+        return this.parseUserViewModel(result);
     },
     async getUserById(id: string): Promise<UserViewModelDto | null> {
         const result = await queryRepository.getUserById(id);
         if (!result) return null;
-        return parseUserViewModel(result);
+        return this.parseUserViewModel(result);
     },
     async createNewUser(login: string, email: string, password: string, confirmed?: boolean): Promise<UserViewModelDto | null> {
         console.log(this);
@@ -46,14 +52,16 @@ export const usersService = {
                 expirationDate: getConfirmationEmailExpirationDate(),
                 isConfirmed: !!confirmed,
                 dateSendingConfirmEmail: [new Date()]
-            }
+            },
+            passwordRecoveryInformation:null
         };
-        const newUserId = await usersRepository.createNewUser(newUser);
-        if (!newUserId) return null;
-        const user = await queryRepository.getUserById(newUserId);
+        const user = await usersRepository.createNewUser(newUser);
         if (!user) return null;
         if (confirmed) return parseUserViewModel(user);
         await emailManager.sendEmailConfirmation(user.accountData.email, user.emailConfirmation.confirmationCode);
-        return parseUserViewModel(user);
+        return this.parseUserViewModel(user);
     }
+
+
+
 };
