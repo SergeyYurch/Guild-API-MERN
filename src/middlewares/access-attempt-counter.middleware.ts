@@ -4,8 +4,7 @@ import {getDeviceInfo} from '../helpers/helpers';
 
 export const accessAttemptCounter = async (req: Request, res: Response, next: NextFunction) => {
     const endpoint = req.originalUrl;
-    const deviceInfo =getDeviceInfo(req)
-    const ip = deviceInfo.ip;
+    const ip = getDeviceInfo(req).ip;
     console.log(`[accessAttemptCounter]-middleware run by ip: ${ip}, for url: ${endpoint}`);
     const attemptsCount = await accessAttemptRepository.getNumberOfAttemptsByIp(ip, endpoint);
     if (attemptsCount > 4) {
