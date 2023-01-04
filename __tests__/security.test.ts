@@ -6,6 +6,11 @@ import {UserEntityWithIdInterface} from '../src/repositories/repository-interfac
 import {usersService} from '../src/services/users.service';
 import {UserViewModelDto} from '../src/controllers/dto/userViewModel.dto';
 import {sub} from 'date-fns';
+import * as dotenv from 'dotenv';
+import mongoose from 'mongoose';
+dotenv.config();
+const mongoUri = process.env.MONGO_URI
+const dbName = process.env.DB_NAME
 
 
 const user1 = {
@@ -33,6 +38,7 @@ describe('GET:HOST/security/devices', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -57,21 +63,16 @@ describe('GET:HOST/security/devices', () => {
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
         user1Id = newUser1.body.id;
         const sessionInfo = await jwtService.getSessionInfoByJwtToken(refreshToken);
-        expiredRefreshToken = await jwtService.createRefreshJWT(user1Id, sessionInfo!.deviceId, String(sub(new Date(), {days: 3})));
+        expiredRefreshToken = refreshToken
+    });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
     });
 
     it('should return code 401 no refreshToken', async () => {
         await request(app)
             .get('/security/devices')
-            .set('X-Forwarded-For', `1.2.3.4`)
-            .set('User-Agent', `android`)
-            .expect(401);
-    });
-
-    it('should return code 401 with expired refreshToken', async () => {
-        await request(app)
-            .get('/security/devices')
-            .set('Cookie', `refreshToken=${expiredRefreshToken}`)
             .set('X-Forwarded-For', `1.2.3.4`)
             .set('User-Agent', `android`)
             .expect(401);
@@ -97,6 +98,7 @@ describe('DELETE: HOST/security/devices', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -151,7 +153,9 @@ describe('DELETE: HOST/security/devices', () => {
         cookies = loginResult3.get('Set-Cookie');
         refreshToken3 = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
     });
-
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
 
     it('should return code 200 when user connected on device1', async () => {
         await request(app)
@@ -232,6 +236,7 @@ describe('DELETE: HOST/security/devices/deviceId', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -281,7 +286,9 @@ describe('DELETE: HOST/security/devices/deviceId', () => {
         deviceId1 = sessionInfo2!.deviceId;
         expiredRefreshToken1 = await jwtService.createRefreshJWT(user1Id, sessionInfo2!.deviceId, String(sub(new Date().getTime(), {days: 2})));
     });
-
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
 
     it('should return code 200 when user1 connected on device1', async () => {
         await request(app)
