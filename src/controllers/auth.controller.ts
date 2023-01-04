@@ -12,6 +12,8 @@ import {
     refreshTokenValidator
 } from "../middlewares/refresh-token-validator.middleware";
 import {accessAttemptCounter} from "../middlewares/access-attempt-counter.middleware";
+import {PasswordRecoveryInputModel} from './dto/passwordRecoveryInputModel.dto';
+import {NewPasswordRecoveryInputModel} from './dto/newPasswordRecoveryInputModel.dto';
 
 export const authRouter = Router();
 
@@ -21,13 +23,15 @@ const {
     validateUserInputModel,
     validateRegistrationEmailResendingModel,
     validateRegistrationConfirmationCodeModel,
-    validateResult
+    validateResult,
+    validatePasswordRecoveryInputModel,
+    validateNewPasswordRecoveryInputModel
 } = validatorMiddleware;
 
 authRouter.post('/login',
+    accessAttemptCounter,
     validateLoginInputModel(),
     validateResult,
-    accessAttemptCounter,
     async (req: RequestWithBody<LoginInputModel>, res: Response) => {
         try {
             const {loginOrEmail, password} = req.body;
@@ -73,12 +77,9 @@ authRouter.post('/registration',
         console.log(`[authController]:POST/registration run`);
         try {
             const {login, password, email} = req.body;
-            try {
-                const newUser = await usersService.createNewUser(login, email, password);
-                if (newUser) return res.sendStatus(204);
-            } catch (error) {
-                return res.sendStatus(500);
-            }
+
+            const newUser = await usersService.createNewUser(login, email, password);
+            if (newUser) return res.sendStatus(204);
         } catch (error) {
             return res.sendStatus(500);
         }
@@ -92,13 +93,10 @@ authRouter.post('/registration-confirmation',
         console.log(`[authController]:POST/registration-confirmation run`);
         try {
             const code = String(req.body.code);
-            try {
-                const result = await authService.confirmEmail(code);
-                if (!result) res.sendStatus(400);
-                return res.sendStatus(204);
-            } catch (error) {
-                return res.sendStatus(500);
-            }
+            const result = await authService.confirmEmail(code);
+            if (!result) res.sendStatus(400);
+            return res.sendStatus(204);
+
         } catch (error) {
             return res.sendStatus(500);
         }
@@ -132,7 +130,7 @@ authRouter.post('/refresh-token',
         try {
             const {ip, title} = getDeviceInfo(req);
             const userId = req.user?.id;
-            const deviceId = req.deviceId
+            const deviceId = req.deviceId;
             const tokensPair = await authService.userRefresh(userId!, deviceId!, ip, title);
             if (!tokensPair) return res.sendStatus(500);
             setRefreshTokenToCookie(res, tokensPair.refreshToken);
@@ -140,6 +138,7 @@ authRouter.post('/refresh-token',
                 "accessToken": tokensPair.accessToken
             });
         } catch (error) {
+
             return res.sendStatus(500);
         }
     });
@@ -160,4 +159,33 @@ authRouter.post('/logout',
     });
 
 
+authRouter.post('/password-recovery',
+    accessAttemptCounter,
+    validatePasswordRecoveryInputModel(),
+    validateResult,
+    async (req: RequestWithBody<PasswordRecoveryInputModel>, res: Response) => {
+        console.log(`[authController]:POST/password-recovery run`);
+        try {
+            const {email} = req.body;
+            await authService.passwordRecovery( email);
+            return res.sendStatus(204);
+        } catch (error) {
+            return res.sendStatus(500);
+        }
+    });
+
+authRouter.post('/new-password',
+    accessAttemptCounter,
+    validateNewPasswordRecoveryInputModel(),
+    validateResult,
+    async (req: RequestWithBody<NewPasswordRecoveryInputModel>, res: Response) => {
+        console.log(`[authController]:POST/password-recovery run`);
+        try {
+            const {newPassword, recoveryCode} = req.body;
+            const result = await authService.confirmPasswordRecovery( newPassword, recoveryCode);
+            return result ? res.sendStatus(204) : res.sendStatus(400);
+        } catch (error) {
+            return res.sendStatus(500);
+        }
+    });
 
