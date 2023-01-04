@@ -41,7 +41,7 @@ export const queryRepository = {
 
         const totalCount = await CommentModel.countDocuments({userId});
         const result = await CommentModel.find({userId})
-            .sort({[sortBy]: sortDirection })
+            .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize);
 
@@ -70,7 +70,7 @@ export const queryRepository = {
         const result = await CommentModel.find({postId})
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(pageSize);
         const items: CommentViewModelDto[] = result.map(e => ({
             id: e._id.toString(),
             content: e.content,
@@ -97,7 +97,7 @@ export const queryRepository = {
         const result = await BlogModel.find(filter)
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(pageSize);
         const items: BlogViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 name: e.name,
@@ -125,7 +125,7 @@ export const queryRepository = {
         const result = await PostModel.find(filter)
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(pageSize);
         const items: PostViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 title: e.title,
@@ -166,7 +166,7 @@ export const queryRepository = {
         const result = await PostModel.find({})
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(pageSize);
         const items: PostViewModelDto[] = result.map(e => ({
                 id: e._id.toString(),
                 title: e.title,
@@ -187,7 +187,7 @@ export const queryRepository = {
     },
     getPostById: async (id: string): Promise<PostViewModelDto | null> => {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostById`);
-        const result = await PostModel.findById(id)
+        const result = await PostModel.findById(id);
         if (!result) return null;
         const {title, shortDescription, content, blogId, blogName, createdAt, _id} = result;
         return {
@@ -216,7 +216,7 @@ export const queryRepository = {
         const result = await UserModel.find(filter)
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
+            .limit(pageSize);
         const items: UserViewModelDto[] = result.map(e => ({
             id: e._id.toString(),
             login: e.accountData.login,
@@ -254,7 +254,13 @@ export const queryRepository = {
                 expirationDate: result.emailConfirmation.expirationDate,
                 isConfirmed: result.emailConfirmation.isConfirmed,
                 dateSendingConfirmEmail: result.emailConfirmation.dateSendingConfirmEmail
-            }
+            },
+            passwordRecoveryInformation: result.passwordRecoveryInformation
+                ? {
+                    confirmationCode: result.passwordRecoveryInformation.confirmationCode,
+                    expirationDate: result.passwordRecoveryInformation.expirationDate
+                }
+                : null
         });
     }
 };
