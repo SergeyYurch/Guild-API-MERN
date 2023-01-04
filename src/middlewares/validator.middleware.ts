@@ -48,7 +48,7 @@ export const validatorMiddleware = {
         body('password')
             .exists()
             .withMessage('password is required')
-            .isLength({min: 1, max: 500})
+            .isLength({min: 6, max: 20})
             .withMessage('password must be min 1 chars long')
     ],
     validateUserInputModel: () => [
@@ -82,6 +82,24 @@ export const validatorMiddleware = {
                 if (user) throw new Error();
             })
             .withMessage('email is already registered'),
+    ],
+    validatePasswordRecoveryInputModel: () => [
+        body('email')
+            .trim()
+            .exists()
+            .withMessage('email is required')
+            .matches(/^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/)
+            .withMessage('email is wrong')
+    ],
+    validateNewPasswordRecoveryInputModel: () => [
+        body('newPassword')
+            .exists()
+            .withMessage('password is required')
+            .isLength({min: 6, max: 20})
+            .withMessage('newPassword must be min 1 chars long'),
+        body('recoveryCode')
+            .exists()
+            .withMessage('recoveryCode is required')
     ],
     validateBlogInputModel: () => [
         body('name')
