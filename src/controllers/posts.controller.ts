@@ -102,8 +102,8 @@ postsRouter.post(
             return res.sendStatus(404);
         }
         const {content} = req.body;
-        const createdComment = await createUserComment({content}, userId, postId);
-        return createdComment ? res.status(201).json(createdComment) : res.sendStatus(500);
+        const createdComment = await createUserComment(content, userId, postId);
+        return createdComment ? res.status(201).send(createdComment) : res.sendStatus(500);
     });
 
 postsRouter.get('/:postId/comments',
