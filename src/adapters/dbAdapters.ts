@@ -22,7 +22,7 @@ const dbName = process.env.DB_NAME
 if (!mongoUri || !dbName){
     throw new Error('!!!Mongo URI does not found')
 }
-const client = new MongoClient(mongoUri+"/"+dbName) //+"?retryWrites=true&w=majority\n"
+const client = new MongoClient(mongoUri+"/"+dbName+"?retryWrites=true&w=majority") //+"?retryWrites=true&w=majority"
 const dbAdapters = client.db();
 export const blogsCollection = dbAdapters.collection<BlogEntity>('blogs')
 export const postsCollection = dbAdapters.collection<PostEntity>('posts')
@@ -48,7 +48,7 @@ export const AccessAttemptModel = mongoose.model('AccessAttempt', accessAttemptS
 
 export async function runDB() {
     try{
-        await mongoose.connect(mongoUri + '/' + dbName);
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         await client.connect();
         await client.db('guildDB').command({ping: 1})
         console.log("Mongo server connected successfully");
