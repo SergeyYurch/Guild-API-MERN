@@ -5,7 +5,7 @@ export const sessionSchema = new Schema<AuthSessionEntity>({
     deviceId:String,
     ip: String,
     title: String,
-    lastActiveDate: Date,
-    expiresDate: Date,
+    lastActiveDate: String,
+    expiresDate: String,
     userId: String,
 });
