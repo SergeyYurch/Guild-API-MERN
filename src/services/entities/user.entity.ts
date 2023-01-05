@@ -13,7 +13,7 @@ export interface UserEntity {
         dateSendingConfirmEmail: Date[]
     },
     passwordRecoveryInformation: null | {
-        confirmationCode: string
+        recoveryCode: string
         expirationDate: Date
     }
 }
