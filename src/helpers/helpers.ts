@@ -11,7 +11,7 @@ import {CONFIRM_EMAIL_LIFE_PERIOD, COOKIE_LIFE_PERIOD, RECOVERY_PASSWORD_CODE_LI
 
 dotenv.config();
 
-const delay = async (ms: number) => {
+export const delay = async (ms: number) => {
     return new Promise <void>((resolve, reject) => {
         setTimeout(()=>resolve(), ms)
     })
