@@ -114,7 +114,7 @@ authRouter.post('/registration-email-resending',
             const user = await usersService.findUserByEmailOrLogin(email);
             const result = await authService.resendingEmail(user!.id);
             if (!result) return res.status(400).send(
-                {"errorsMessages": [{"message": "cant\'t send email", "field": "email"}]}
+                {"errorsMessages": [{"message": "can\'t send email", "field": "email"}]}
             );
             return res.sendStatus(204);
         } catch (error) {
@@ -131,7 +131,7 @@ authRouter.post('/refresh-token',
             const {ip, title} = getDeviceInfo(req);
             const userId = req.user?.id;
             const deviceId = req.deviceId;
-            const tokensPair = await authService.userRefresh(userId!, deviceId!, ip, title);
+            const tokensPair = await authService.userRefreshTokens(userId!, deviceId!, ip, title);
             if (!tokensPair) return res.sendStatus(500);
             setRefreshTokenToCookie(res, tokensPair.refreshToken);
             return res.status(200).send({
