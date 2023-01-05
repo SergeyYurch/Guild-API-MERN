@@ -75,15 +75,7 @@ export const usersRepository = {
         let result = true;
         user.save((err, doc) => result = !err);
         return result;
-        // const result = await usersCollection.updateOne(
-        //     {_id: new ObjectId(id)},
-        //     {
-        //         $set: {
-        //             'emailConfirmation.isConfirmed': true,
-        //             'dateSendingConfirmEmail': []
-        //         }
-        //     });
-        // return result.acknowledged;
+
     },
     async updateSendingConfirmEmail(id: string, confirmationCode: string, expirationDate: Date): Promise<boolean> {
         console.log(`[usersRepository]: updateSendingConfirmEmail userId: ${id}`);
@@ -95,17 +87,7 @@ export const usersRepository = {
         let result = true;
         user.save((err, doc) => result = !err);
         return result;
-        //
-        // const result = await usersCollection.updateOne(
-        //     {_id: new ObjectId(id)},
-        //     {
-        //         $set: {
-        //             'emailConfirmation.confirmationCode': confirmationCode,
-        //             'emailConfirmation.expirationDate': expirationDate
-        //         },
-        //         $push: {'dateSendingConfirmEmail': new Date()}
-        //     });
-        // return result.acknowledged;
+
     },
     async saveSendingRecoveryPasswordEmail(id: string, recoveryCode: string, expirationDate: Date): Promise<boolean> {
         console.log(`[usersRepository]: saveSendingRecoveryPasswordEmail userId: ${id}`);
