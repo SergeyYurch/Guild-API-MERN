@@ -56,22 +56,28 @@ export const authService = {
     },
     async confirmPasswordRecovery(newPassword: string, recoveryCode: string) {
         console.log(`[usersService]:confirmPasswordRecovery`);
-        const user = await usersRepository.findUserByPasswordConfirmationCode(recoveryCode);
+        const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
         if (!user) return false;
-        const passwordHash = generatePassHash(newPassword, user.accountData.passwordSalt);
+        console.log(`[usersService]:confirmPasswordRecovery expirationDate: ${user.passwordRecoveryInformation?.expirationDate}`);
+        if(user.passwordRecoveryInformation?.recoveryCode!==recoveryCode) return false
+        if(user.passwordRecoveryInformation?.expirationDate < new Date()) return false
+        const passwordHash = generatePassHash(newPassword, user.accountData!.passwordSalt);
         return  await usersRepository.confirmRecoveryPassword(user.id, passwordHash);
     },
     async resendingEmail(id: string): Promise<boolean> {
         console.log(`[usersService]:resendingEmail `);
         const user = await queryRepository.getUserById(id);
+        console.log(`[usersService]: getUserById returned:`);
+        console.log(user);
+
         if (!user) return false;
         if (user.emailConfirmation.isConfirmed) return false;
         const newConfirmationCode = getConfirmationCode();
         const newExpirationDate = getConfirmationEmailExpirationDate();
         await usersRepository.updateSendingConfirmEmail(user.id, newConfirmationCode, newExpirationDate);
         const sendingDates = user.emailConfirmation.dateSendingConfirmEmail;
-        //Если было более 5 отправок письма и последняя менее 5 минут назад отбиваем
-        if (sendingDates.length > 5
+        //Если было более 10 отправок письма и последняя менее 5 минут назад отбиваем
+        if (sendingDates.length > 10
             && sendingDates.slice(-1)[0] < add(new Date(), {minutes: 5})) return false;
         const resend: SentMessageInfo = await emailManager.sendEmailConfirmation(user.accountData.email, newConfirmationCode);
         // проверяем ответ после отправки письма и обновляем данные в базе по повторной отправке
@@ -96,7 +102,7 @@ export const authService = {
         });
         return {accessToken, refreshToken};
     },
-    async userRefresh(userId: string, deviceId: string, ip: string, title: string): Promise<UserTokensPairInterface | null> {
+    async userRefreshTokens(userId: string, deviceId: string, ip: string, title: string): Promise<UserTokensPairInterface | null> {
         console.log(`[authService]/userRefresh  started`);
         const accessToken = await jwtService.createAccessJWT(userId);
         const refreshToken = await jwtService.createRefreshJWT(userId, deviceId, ip);
