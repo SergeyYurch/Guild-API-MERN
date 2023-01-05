@@ -25,7 +25,7 @@ import {UserEntityWithIdInterface} from "./repository-interfaces/user-entity-wit
 // };
 
 export const usersRepository = {
-    parseUserInDbEntity (result: WithId<UserEntity>): UserEntityWithIdInterface {
+    parseUserInDbEntity(result: WithId<UserEntity>): UserEntityWithIdInterface {
         console.log(' parseUserInDbEntity');
         return ({
             id: result._id.toString(),
@@ -42,7 +42,12 @@ export const usersRepository = {
                 isConfirmed: result.emailConfirmation.isConfirmed,
                 dateSendingConfirmEmail: result.emailConfirmation.dateSendingConfirmEmail
             },
-            passwordRecoveryInformation: null
+            passwordRecoveryInformation: result.passwordRecoveryInformation
+                ? {
+                    recoveryCode: result.passwordRecoveryInformation.recoveryCode,
+                    expirationDate: result.passwordRecoveryInformation.expirationDate
+                }
+                : null
         });
     },
 
@@ -59,9 +64,9 @@ export const usersRepository = {
         console.log(`[usersRepository]: findUser by confirmationCode - user find!`);
         return this.parseUserInDbEntity(result);
     },
-    async findUserByPasswordConfirmationCode(value: string): Promise<UserEntityWithIdInterface | null> {
+    async findUserByPasswordRecoveryCode(value: string): Promise<UserEntityWithIdInterface | null> {
         console.log(`[usersRepository]: findUser by confirmationCode`);
-        const result = await UserModel.findOne({'passwordRecoveryInformation.confirmationCode': value});
+        const result = await UserModel.findOne({'passwordRecoveryInformation.recoveryCode': value});
         if (!result) return null;
         return this.parseUserInDbEntity(result);
     },
@@ -69,8 +74,8 @@ export const usersRepository = {
         console.log(`[usersRepository]: createNewUser login: ${user.accountData.login}, e-mail: ${user.accountData.email}`);
         const userInstance = new UserModel(user);
         const result = await userInstance.save();
-        if(!result) return null
-        return this.parseUserInDbEntity(result)
+        if (!result) return null;
+        return this.parseUserInDbEntity(result);
         //
         // const result = await usersCollection.insertOne(user);
         // if (result.acknowledged) return result.insertedId.toString();
@@ -123,20 +128,20 @@ export const usersRepository = {
         //     });
         // return result.acknowledged;
     },
-    async saveSendingRecoveryPasswordEmail(id: string, confirmationCode: string, expirationDate: Date): Promise<boolean> {
+    async saveSendingRecoveryPasswordEmail(id: string, recoveryCode: string, expirationDate: Date): Promise<boolean> {
         console.log(`[usersRepository]: saveSendingRecoveryPasswordEmail userId: ${id}`);
         const user = await UserModel.findOne({_id: new ObjectId(id)});
         if (!user) return false;
-        user.passwordRecoveryInformation = {confirmationCode, expirationDate};
+        user.passwordRecoveryInformation = {recoveryCode, expirationDate};
         let result = true;
         await user.save((err, doc) => result = !err);
         return result;
     },
-    async confirmRecoveryPassword(id: string, passwordHash:string): Promise<boolean> {
+    async confirmRecoveryPassword(id: string, passwordHash: string): Promise<boolean> {
         console.log(`[usersRepository]: confirmRecoveryPasswordEmail userId: ${id}`);
         const user = await UserModel.findOne({_id: new ObjectId(id)});
         if (!user) return false;
-        user.accountData.passwordHash=passwordHash;
+        user.accountData.passwordHash = passwordHash;
         user.passwordRecoveryInformation = null;
         let result = true;
         await user.save((err, doc) => result = !err);
