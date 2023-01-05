@@ -17,7 +17,7 @@ export const userSchema = new Schema<UserEntity>({
     },
     passwordRecoveryInformation: {
         type:{
-            confirmationCode: String,
+            recoveryCode: String,
             expirationDate: Date
         },
         default:null}
