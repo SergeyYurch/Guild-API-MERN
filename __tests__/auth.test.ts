@@ -9,6 +9,7 @@ import {sub} from 'date-fns';
 import {queryRepository} from '../src/repositories/query.repository';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
+import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI
@@ -294,16 +295,6 @@ describe('HOST/auth/refresh-token ', () => {
     });
 
     it('should return code 401 with expired refreshToken', async () => {
-        await request(app)
-            .post('/auth/refresh-token')
-            .set('Cookie', `refreshToken=${expiredRefreshToken}`)
-            .set('X-Forwarded-For', `1.2.3.4`)
-            .set('User-Agent', `android`)
-            .expect(401);
-    });
-
-    it('should return code 429 to more than 5 attempts from one IP-address during 10 seconds', async () => {
-
         let loginResult = await request(app)
             .post('/auth/refresh-token')
             .set('Cookie', `refreshToken=${refreshToken}`)
@@ -313,18 +304,50 @@ describe('HOST/auth/refresh-token ', () => {
 
         let cookies = loginResult.get('Set-Cookie');
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
+        expiredRefreshToken =refreshToken
 
-        loginResult = await request(app)
+         loginResult = await request(app)
             .post('/auth/refresh-token')
             .set('Cookie', `refreshToken=${refreshToken}`)
             .set('X-Forwarded-For', `1.2.3.4`)
             .set('User-Agent', `android`)
             .expect(200);
 
-        cookies = loginResult.get('Set-Cookie');
+         cookies = loginResult.get('Set-Cookie');
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
 
-        loginResult = await request(app)
+
+        await request(app)
+            .post('/auth/refresh-token')
+            .set('Cookie', `refreshToken=${expiredRefreshToken}`)
+            .set('X-Forwarded-For', `1.2.3.4`)
+            .set('User-Agent', `android`)
+            .expect(401);
+    });
+
+    it('should return code 429 to more than 5 attempts from one IP-address during 10 seconds', async () => {
+        //
+        // let loginResult = await request(app)
+        //     .post('/auth/refresh-token')
+        //     .set('Cookie', `refreshToken=${refreshToken}`)
+        //     .set('X-Forwarded-For', `1.2.3.4`)
+        //     .set('User-Agent', `android`)
+        //     .expect(200);
+        //
+        // let cookies = loginResult.get('Set-Cookie');
+        // refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
+        //
+        // loginResult = await request(app)
+        //     .post('/auth/refresh-token')
+        //     .set('Cookie', `refreshToken=${refreshToken}`)
+        //     .set('X-Forwarded-For', `1.2.3.4`)
+        //     .set('User-Agent', `android`)
+        //     .expect(200);
+        //
+        // cookies = loginResult.get('Set-Cookie');
+        // refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
+
+        await request(app)
             .post('/auth/refresh-token')
             .set('Cookie', `refreshToken=${refreshToken}`)
             .set('X-Forwarded-For', `1.2.3.4`)
@@ -597,4 +620,234 @@ describe('HOST/auth/me', () => {
     });
 
 
+});
+describe('HOST/auth/password-recovery', () => {
+    let user1Id = '';
+    let accessToken = '';
+    let refreshToken = '';
+    let expiredRefreshToken = '';
+    let user2RefreshToken = '';
+    let confirmationCode = '';
+    let user: UserViewModelDto | null;
+    let userInDb: UserEntityWithIdInterface | null;
+
+    beforeAll(async () => {
+        //cleaning dataBase
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await request(app)
+            .delete('/testing/all-data');
+        //created new users
+
+        const newUser1 = await request(app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send(user1)
+
+        user = await usersService.findUserByEmailOrLogin('user1');
+        user1Id = user!.id;
+        userInDb = await queryRepository.getUserById(user1Id);
+    });
+    afterAll(async ()=>{
+        await mongoose.connection.close();
+    })
+    it('should return code 400 If email is incorrect',
+        async () => {
+            await request(app)
+                .post('/auth/password-recovery')
+                .send({
+                    "email": "fake^^gmail.com"
+                })
+                .expect(400);
+        });
+    it('should return code 204 If the email is correct',
+        async () => {
+            await request(app)
+                .post('/auth/password-recovery')
+                .send({
+                    "email": "email1@gmail.com"
+                })
+                .expect(204);
+        });
+
+
+    it('should return code 204 If the email is correct but email is not in dataBase',
+        async () => {
+            await request(app)
+                .post('/auth/password-recovery')
+                .send({
+                    "email": "email1111@gmail.com"
+                })
+                .expect(204);
+        });
+
+
+    it('should return code 429 to more than 5 attempts from one IP-address during 10 seconds', async () => {
+
+        await request(app)
+            .post('/auth/password-recovery')
+            .send({
+                "email": "email1@gmail.com"
+            })
+        await request(app)
+            .post('/auth/password-recovery')
+            .send({
+                "email": "email1@gmail.com"
+            })
+
+        await request(app)
+            .post('/auth/password-recovery')
+            .send({
+                "email": "email1@gmail.com"
+            })
+            .expect(429);
+    });
+});
+describe('HOST/auth/new-password', () => {
+    let user1Id = '';
+    let accessToken = '';
+    let refreshToken = '';
+    let expiredRefreshToken = '';
+    let user2RefreshToken = '';
+    let confirmationCode = '';
+    let user: UserViewModelDto | null;
+    let userInDb: UserEntityWithIdInterface | null;
+    let recoveryCode = ''
+
+    beforeAll(async () => {
+        //cleaning dataBase
+        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await request(app)
+            .delete('/testing/all-data');
+        //created new users
+
+        const newUser1 = await request(app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send(user1)
+        //request new password
+        await request(app)
+            .post('/auth/password-recovery')
+            .send({
+                "email": "email1@gmail.com"
+            })
+
+        user = await usersService.findUserByEmailOrLogin('user1');
+        user1Id = user!.id;
+        userInDb = await queryRepository.getUserById(user1Id);
+        recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode
+    });
+    afterAll(async ()=>{
+        await mongoose.connection.close();
+    })
+    it('should return code 400 If the inputModel is incorrect',
+        async () => {
+            await request(app)
+                .post('/auth/new-password')
+                .send({
+                    "newPassword": "string"
+                })
+                .expect(400);
+        });
+
+    it('should return code 400 If the inputModel has incorrect value (for incorrect password length) ',
+        async () => {
+                await request(app)
+                    .post('/auth/new-password')
+                    .send({
+                        "newPassword": "st",
+                        "recoveryCode": recoveryCode
+                    })
+                    .expect(400);
+        });
+
+    it('should return code 400 If  RecoveryCode is incorrect',
+        async () => {
+            await request(app)
+                .post('/auth/new-password')
+                .send({
+                    "newPassword": "string",
+                    "recoveryCode": "recoveryCode"
+                })
+                .expect(400);
+        });
+
+    it('should return code 400 If RecoveryCode is expired',
+        async () => {
+            await delay(12000)
+
+            await request(app)
+                .post('/auth/new-password')
+                .send({
+                    "newPassword": "st",
+                    "recoveryCode": recoveryCode
+                })
+                .expect(400);
+        });
+
+
+
+    it('should return code 204 If code is valid and new password is accepted',
+        async () => {
+            await request(app)
+                .post('/auth/password-recovery')
+                .send({
+                    "email": "email1@gmail.com"
+                })
+
+            userInDb = await queryRepository.getUserById(user1Id);
+            recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode
+
+            await request(app)
+                .post('/auth/new-password')
+                .send({
+                    "newPassword": "newPassword",
+                    "recoveryCode": recoveryCode
+                })
+                .expect(204);
+        });
+
+
+    it('should return code 429 to more than 5 attempts from one IP-address during 10 seconds', async () => {
+       await delay(10000)
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+
+
+
+        await request(app)
+            .post('/auth/new-password')
+            .send({
+                "newPassword": "newPassword",
+                "recoveryCode": recoveryCode
+            })
+            .expect(429);
+    });
 });
