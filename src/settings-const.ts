@@ -19,6 +19,6 @@ export const CONFIRM_EMAIL_LIFE_PERIOD = {
 };
 
 export const RECOVERY_PASSWORD_CODE_LIFE_PERIOD = {
-    units: 'minutes',
-    amount: '10'
+    units: 'seconds',
+    amount: '100'
 };

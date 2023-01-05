@@ -3,27 +3,6 @@ import {ObjectId, WithId} from "mongodb";
 import {UserEntity} from "../services/entities/user.entity";
 import {UserEntityWithIdInterface} from "./repository-interfaces/user-entity-with-id.interface";
 
-// const parseUserInDbEntity = (result: WithId<UserEntity>): UserEntityWithIdInterface => {
-//     console.log(' parseUserInDbEntity');
-//     return ({
-//         id: result._id.toString(),
-//         accountData: {
-//             login: result.accountData.login,
-//             email: result.accountData.email,
-//             passwordHash: result.accountData.passwordHash,
-//             passwordSalt: result.accountData.passwordSalt,
-//             createdAt: result.accountData.createdAt
-//         },
-//         emailConfirmation: {
-//             confirmationCode: result.emailConfirmation.confirmationCode,
-//             expirationDate: result.emailConfirmation.expirationDate,
-//             isConfirmed: result.emailConfirmation.isConfirmed,
-//             dateSendingConfirmEmail: result.emailConfirmation.dateSendingConfirmEmail
-//         },
-//         passwordRecoveryInformation: null
-//     });
-// };
-
 export const usersRepository = {
     parseUserInDbEntity(result: WithId<UserEntity>): UserEntityWithIdInterface {
         console.log(' parseUserInDbEntity');
