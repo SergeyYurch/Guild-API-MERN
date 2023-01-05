@@ -19,6 +19,8 @@ import {pagesCount} from "../helpers/helpers";
 import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
 import {UserEntity} from '../services/entities/user.entity';
+import {usersService} from '../services/users.service';
+import {usersRepository} from './users.repository';
 
 export const queryRepository = {
     getCommentById: async (id: string): Promise<CommentViewModelDto | null> => {
@@ -236,31 +238,6 @@ export const queryRepository = {
         const result = await UserModel.findById(id);
         console.log(`[queryRepository]: getUserById ${id} `);
         if (!result) return null;
-        return this.parseUserInDbEntity(result);
+        return usersRepository.parseUserInDbEntity(result);
     },
-    parseUserInDbEntity(result: WithId<UserEntity>): UserEntityWithIdInterface {
-        console.log('[queryRepository]/parseUserInDbEntity');
-        return ({
-            id: result._id.toString(),
-            accountData: {
-                login: result.accountData.login,
-                email: result.accountData.email,
-                passwordHash: result.accountData.passwordHash,
-                passwordSalt: result.accountData.passwordSalt,
-                createdAt: result.accountData.createdAt
-            },
-            emailConfirmation: {
-                confirmationCode: result.emailConfirmation.confirmationCode,
-                expirationDate: result.emailConfirmation.expirationDate,
-                isConfirmed: result.emailConfirmation.isConfirmed,
-                dateSendingConfirmEmail: result.emailConfirmation.dateSendingConfirmEmail
-            },
-            passwordRecoveryInformation: result.passwordRecoveryInformation
-                ? {
-                    confirmationCode: result.passwordRecoveryInformation.confirmationCode,
-                    expirationDate: result.passwordRecoveryInformation.expirationDate
-                }
-                : null
-        });
-    }
 };
