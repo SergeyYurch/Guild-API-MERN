@@ -106,6 +106,7 @@ export const usersRepository = {
         user.passwordRecoveryInformation = null;
         let result = true;
         await user.save((err, doc) => result = !err);
+        console.log(`[usersRepository]: confirmRecoveryPasswordEmail result: ${result}`);
         return result;
     },
     async setNewConfirmationCode(id: string, code: string, date: Date): Promise<boolean> {
