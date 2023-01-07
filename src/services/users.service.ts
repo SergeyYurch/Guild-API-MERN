@@ -21,20 +21,20 @@ export const usersService = {
         };
     },
     async deleteUserById(id: string): Promise<boolean> {
+        console.log(`[usersService]:deleteUserById started ...`);
         return await usersRepository.deleteUserById(id);
     },
     async findUserByEmailOrLogin(loginOrEmail: string): Promise<UserViewModelDto | null> {
         const result = await usersRepository.findUserByEmailOrLogin(loginOrEmail);
         if (!result) return null;
-        return this.parseUserViewModel(result);
+        return usersService.parseUserViewModel(result);
     },
     async getUserById(id: string): Promise<UserViewModelDto | null> {
         const result = await queryRepository.getUserById(id);
         if (!result) return null;
-        return this.parseUserViewModel(result);
+        return usersService.parseUserViewModel(result);
     },
     async createNewUser(login: string, email: string, password: string, confirmed?: boolean): Promise<UserViewModelDto | null> {
-        console.log(this);
         console.log(`[usersService]: createNewUser ${login}`);
         const createdAt = new Date();
         const passwordSalt = await generateHashSalt();
@@ -59,9 +59,6 @@ export const usersService = {
         if (!user) return null;
         if (confirmed) return parseUserViewModel(user);
         await emailManager.sendEmailConfirmation(user.accountData.email, user.emailConfirmation.confirmationCode);
-        return this.parseUserViewModel(user);
+        return usersService.parseUserViewModel(user);
     }
-
-
-
 };
