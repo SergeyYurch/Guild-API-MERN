@@ -167,7 +167,7 @@ authRouter.post('/password-recovery',
         console.log(`[authController]:POST/password-recovery run`);
         try {
             const {email} = req.body;
-            await authService.passwordRecovery( email);
+            await authService.passwordRecovery(email);
             return res.sendStatus(204);
         } catch (error) {
             return res.sendStatus(500);
@@ -179,11 +179,21 @@ authRouter.post('/new-password',
     validateNewPasswordRecoveryInputModel(),
     validateResult,
     async (req: RequestWithBody<NewPasswordRecoveryInputModel>, res: Response) => {
-        console.log(`[authController]:POST/password-recovery run`);
+        console.log(`[authController]:POST on https://{host}/auth/new-password init...`);
         try {
             const {newPassword, recoveryCode} = req.body;
-            const result = await authService.confirmPasswordRecovery( newPassword, recoveryCode);
-            return result ? res.sendStatus(204) : res.sendStatus(400);
+            const result = await authService.confirmPasswordRecovery(newPassword, recoveryCode);
+            if (result.code === 400) {
+                res.status(400).send({
+                    errorsMessages: [
+                        {
+                            message: 'recoveryCode is wrong',
+                            field: 'recoveryCode'
+                        }]
+                });
+            }
+            if (result.code === 500) return res.sendStatus(500);
+            return res.sendStatus(204);
         } catch (error) {
             return res.sendStatus(500);
         }
