@@ -12,8 +12,8 @@ import * as dotenv from 'dotenv';
 import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
-const mongoUri = process.env.MONGO_URI
-const dbName = process.env.DB_NAME
+const mongoUri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
 
 const user1 = {
     login: "user1",
@@ -40,13 +40,13 @@ describe('HOST/auth/registration :login user and receiving token, getting info a
 
     beforeAll(async () => {
         //Cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
 
 
     it('should return code 400 If the inputModel has incorrect values', async () => {
@@ -116,7 +116,7 @@ describe('HOST/auth/login :login user and receiving token, getting info about us
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -155,9 +155,9 @@ describe('HOST/auth/login :login user and receiving token, getting info about us
         user2Id = newUser2.body.id;
         post1Id = newPost1.body.id;
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 400 If the inputModel has incorrect values', async () => {
         await request(app)
             .post('/auth/login')
@@ -232,7 +232,7 @@ describe('HOST/auth/refresh-token ', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -240,7 +240,7 @@ describe('HOST/auth/refresh-token ', () => {
         const newUser1 = await request(app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
-            .send(user1)
+            .send(user1);
 
         //login user
         const loginResult = await request(app)
@@ -254,14 +254,14 @@ describe('HOST/auth/refresh-token ', () => {
 
         const cookies = loginResult.get('Set-Cookie');
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
-        expiredRefreshToken = refreshToken
+        expiredRefreshToken = refreshToken;
         user1Id = newUser1.body.id;
         const sessionInfo = await jwtService.getSessionInfoByJwtToken(refreshToken);
 
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 401 no refreshToken', async () => {
         await request(app)
             .post('/auth/refresh-token')
@@ -269,8 +269,6 @@ describe('HOST/auth/refresh-token ', () => {
             .set('User-Agent', `android`)
             .expect(401);
     });
-
-
 
 
     it('should return code 200 and pair of JWT-tokens', async () => {
@@ -286,8 +284,8 @@ describe('HOST/auth/refresh-token ', () => {
         console.log('refreshToken');
 
         console.log(refreshToken);
-         const userIdFromRefreshToken = await jwtService.getUserIdByJwtToken(refreshToken, 'refresh');
-         expect(userIdFromRefreshToken).toBe(user1Id);
+        const userIdFromRefreshToken = await jwtService.getUserIdByJwtToken(refreshToken, 'refresh');
+        expect(userIdFromRefreshToken).toBe(user1Id);
 
         const accessToken = result.body.accessToken;
         const idFromToken = await jwtService.getUserIdByJwtToken(accessToken, 'access');
@@ -304,16 +302,16 @@ describe('HOST/auth/refresh-token ', () => {
 
         let cookies = loginResult.get('Set-Cookie');
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
-        expiredRefreshToken =refreshToken
+        expiredRefreshToken = refreshToken;
 
-         loginResult = await request(app)
+        loginResult = await request(app)
             .post('/auth/refresh-token')
             .set('Cookie', `refreshToken=${refreshToken}`)
             .set('X-Forwarded-For', `1.2.3.4`)
             .set('User-Agent', `android`)
             .expect(200);
 
-         cookies = loginResult.get('Set-Cookie');
+        cookies = loginResult.get('Set-Cookie');
         refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
 
 
@@ -369,7 +367,7 @@ describe('HOST/auth/registration-confirmation ', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -383,9 +381,9 @@ describe('HOST/auth/registration-confirmation ', () => {
         userInDb = await queryRepository.getUserById(user1Id);
         confirmationCode = userInDb!.emailConfirmation.confirmationCode;
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 400 If the confirmation code is incorrect, expired or already been applied',
         async () => {
             await request(app)
@@ -451,7 +449,7 @@ describe('HOST/auth/registration-email-resending', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -465,9 +463,9 @@ describe('HOST/auth/registration-email-resending', () => {
         userInDb = await queryRepository.getUserById(user1Id);
         confirmationCode = userInDb!.emailConfirmation.confirmationCode;
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 400 If email is incorrect',
         async () => {
             await request(app)
@@ -525,7 +523,7 @@ describe('HOST/auth/logout', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -551,9 +549,9 @@ describe('HOST/auth/logout', () => {
         expiredRefreshToken = await jwtService.createRefreshJWT(user1Id, sessionInfo!.deviceId, String(new Date().getTime() - 10000));
 
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 401 no refreshToken', async () => {
         await request(app)
             .post('/auth/logout')
@@ -583,7 +581,7 @@ describe('HOST/auth/me', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -602,11 +600,11 @@ describe('HOST/auth/me', () => {
                 "password": "password1"
             });
 
-        accessToken = loginResult.body.accessToken
+        accessToken = loginResult.body.accessToken;
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 401 no accessToken', async () => {
         await request(app)
             .get('/auth/me')
@@ -615,7 +613,7 @@ describe('HOST/auth/me', () => {
     it('should return code 200 with correct accessToken', async () => {
         await request(app)
             .get('/auth/me')
-            .auth(accessToken, { type: 'bearer' })
+            .auth(accessToken, {type: 'bearer'})
             .expect(200);
     });
 
@@ -633,7 +631,7 @@ describe('HOST/auth/password-recovery', () => {
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -641,15 +639,15 @@ describe('HOST/auth/password-recovery', () => {
         const newUser1 = await request(app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
-            .send(user1)
+            .send(user1);
 
         user = await usersService.findUserByEmailOrLogin('user1');
         user1Id = user!.id;
         userInDb = await queryRepository.getUserById(user1Id);
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 400 If email is incorrect',
         async () => {
             await request(app)
@@ -687,12 +685,12 @@ describe('HOST/auth/password-recovery', () => {
             .post('/auth/password-recovery')
             .send({
                 "email": "email1@gmail.com"
-            })
+            });
         await request(app)
             .post('/auth/password-recovery')
             .send({
                 "email": "email1@gmail.com"
-            })
+            });
 
         await request(app)
             .post('/auth/password-recovery')
@@ -711,11 +709,11 @@ describe('HOST/auth/new-password', () => {
     let confirmationCode = '';
     let user: UserViewModelDto | null;
     let userInDb: UserEntityWithIdInterface | null;
-    let recoveryCode = ''
+    let recoveryCode = '';
 
     beforeAll(async () => {
         //cleaning dataBase
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //created new users
@@ -723,22 +721,22 @@ describe('HOST/auth/new-password', () => {
         const newUser1 = await request(app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
-            .send(user1)
+            .send(user1);
         //request new password
         await request(app)
             .post('/auth/password-recovery')
             .send({
                 "email": "email1@gmail.com"
-            })
+            });
 
         user = await usersService.findUserByEmailOrLogin('user1');
         user1Id = user!.id;
         userInDb = await queryRepository.getUserById(user1Id);
-        recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode
+        recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode;
     });
-    afterAll(async ()=>{
+    afterAll(async () => {
         await mongoose.connection.close();
-    })
+    });
     it('should return code 400 If the inputModel is incorrect',
         async () => {
             await request(app)
@@ -751,13 +749,13 @@ describe('HOST/auth/new-password', () => {
 
     it('should return code 400 If the inputModel has incorrect value (for incorrect password length) ',
         async () => {
-                await request(app)
-                    .post('/auth/new-password')
-                    .send({
-                        "newPassword": "st",
-                        "recoveryCode": recoveryCode
-                    })
-                    .expect(400);
+            await request(app)
+                .post('/auth/new-password')
+                .send({
+                    "newPassword": "st",
+                    "recoveryCode": recoveryCode
+                })
+                .expect(400);
         });
 
     it('should return code 400 If  RecoveryCode is incorrect',
@@ -773,7 +771,7 @@ describe('HOST/auth/new-password', () => {
 
     it('should return code 400 If RecoveryCode is expired',
         async () => {
-            await delay(12000)
+            await delay(12000);
 
             await request(app)
                 .post('/auth/new-password')
@@ -785,17 +783,16 @@ describe('HOST/auth/new-password', () => {
         });
 
 
-
     it('should return code 204 If code is valid and new password is accepted',
         async () => {
             await request(app)
                 .post('/auth/password-recovery')
                 .send({
                     "email": "email1@gmail.com"
-                })
+                });
 
             userInDb = await queryRepository.getUserById(user1Id);
-            recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode
+            recoveryCode = userInDb!.passwordRecoveryInformation!.recoveryCode;
 
             await request(app)
                 .post('/auth/new-password')
@@ -804,42 +801,60 @@ describe('HOST/auth/new-password', () => {
                     "recoveryCode": recoveryCode
                 })
                 .expect(204);
+
+
         });
+    it('should return code 200 when user connect with new password', async () => {
+        const result = await request(app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user1",
+                "password": "newPassword"
+            })
+            .expect(200);
+    });
+    it('should return code 401 when user connect with old password', async () => {
+        const result = await request(app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user1",
+                "password": "password1"
+            })
+            .expect(401);
 
-
+    });
     it('should return code 429 to more than 5 attempts from one IP-address during 10 seconds', async () => {
-       await delay(10000)
+        await delay(10000);
         await request(app)
             .post('/auth/new-password')
             .send({
                 "newPassword": "newPassword",
                 "recoveryCode": recoveryCode
-            })
+            });
         await request(app)
             .post('/auth/new-password')
             .send({
                 "newPassword": "newPassword",
                 "recoveryCode": recoveryCode
-            })
+            });
         await request(app)
             .post('/auth/new-password')
             .send({
                 "newPassword": "newPassword",
                 "recoveryCode": recoveryCode
-            })
+            });
         await request(app)
             .post('/auth/new-password')
             .send({
                 "newPassword": "newPassword",
                 "recoveryCode": recoveryCode
-            })
+            });
         await request(app)
             .post('/auth/new-password')
             .send({
                 "newPassword": "newPassword",
                 "recoveryCode": recoveryCode
-            })
-
+            });
 
 
         await request(app)
