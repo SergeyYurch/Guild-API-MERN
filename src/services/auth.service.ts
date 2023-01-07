@@ -18,13 +18,12 @@ import {AuthSessionInDb} from "../repositories/repository-interfaces/auth-sessio
 import {ObjectId} from 'mongodb';
 import {queryRepository} from '../repositories/query.repository';
 import {ResultInterface} from '../types/result.interface';
-import {promises} from 'dns';
 
 export const authService = {
 
     async findCorrectConfirmationCode(code: string): Promise<boolean> {
         const user = await usersRepository.findUserByConfirmationCode(code);
-        console.log(`[usersService]: findCorrectConfirmationCode`);
+        console.log(`[authService]: findCorrectConfirmationCode`);
         if (!user) return false;
         if (user.emailConfirmation.isConfirmed) return false;
         if (user.emailConfirmation.expirationDate < new Date()) return false;
@@ -40,13 +39,13 @@ export const authService = {
         return parseUserViewModel(user);
     },
     async confirmEmail(code: string): Promise<boolean> {
-        console.log(`[usersService]:confirmEmail `);
+        console.log(`[authService]:confirmEmail `);
         const user = await usersRepository.findUserByConfirmationCode(code);
         if (!user) return false;
         return await usersRepository.confirmEmailInDb(user.id);
     },
     async passwordRecovery(email: string) {
-        console.log(`[usersService]:passwordRecovery `);
+        console.log(`[authService]:passwordRecovery `);
         const user = await usersRepository.findUserByEmailOrLogin(email);
         if (!user) return;
         await usersRepository.confirmEmailInDb(user.id);
@@ -57,7 +56,7 @@ export const authService = {
         return true;
     },
     async confirmPasswordRecovery(newPassword: string, recoveryCode: string): Promise<ResultInterface> {
-        console.log(`[usersService]:confirmPasswordRecovery init...`);
+        console.log(`[authService]:confirmPasswordRecovery init...`);
         const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
         if (!user) return {status: false, code: 400, message: 'don\'t find user'};
         if (user.passwordRecoveryInformation?.recoveryCode !== recoveryCode) {
@@ -69,7 +68,7 @@ export const authService = {
             return {status: false, code: 400, message: 'recoveryCode is expired'};
         }
         const passwordHash = generatePassHash(newPassword, user.accountData!.passwordSalt);
-        console.log(`[usersService]:confirmPasswordRecovery newPassword is confirmed, save new pass to DB`);
+        console.log(`[authService]:confirmPasswordRecovery newPassword is confirmed, save new pass to DB`);
         const result = await usersRepository.confirmRecoveryPassword(user.id, passwordHash);
         if (!result) {
             console.log(`[usersService]:confirmPasswordRecovery error saving to DB`);
@@ -78,7 +77,7 @@ export const authService = {
         return {status: true, code: 204, message: 'ok'};
     },
     async resendingEmail(id: string): Promise<boolean> {
-        console.log(`[usersService]:resendingEmail `);
+        console.log(`[authService]:resendingEmail `);
         const user = await queryRepository.getUserById(id);
         console.log(`[usersService]: getUserById returned:`);
         console.log(user);
@@ -133,7 +132,7 @@ export const authService = {
     },
     async userLogout(refreshToken: string): Promise<boolean> {
         const userInfo = await jwtService.getSessionInfoByJwtToken(refreshToken);
-        console.log(`[usersService]: userLogout`);
+        console.log(`[authService]: userLogout`);
         if (!userInfo) return false;
         return authSessionsRepository.deleteSessionById(userInfo.deviceId);
     },
