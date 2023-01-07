@@ -1,13 +1,9 @@
 import {
     BlogModel,
-    blogsCollection,
     CommentModel,
-    commentsCollection, PostModel,
-    postsCollection,
+    PostModel,
     UserModel,
-    usersCollection
 } from "../adapters/dbAdapters";
-import {ObjectId, WithId} from "mongodb";
 import {
     PaginatorOptionInterface,
 } from "./interfaces/query.repository.interface";
@@ -18,8 +14,6 @@ import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
 import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
-import {UserEntity} from '../services/entities/user.entity';
-import {usersService} from '../services/users.service';
 import {usersRepository} from './users.repository';
 
 export const queryRepository = {
@@ -207,14 +201,20 @@ export const queryRepository = {
                         searchLoginTerm: string | null,
                         searchEmailTerm: string | null
     ): Promise<PaginatorDto<UserViewModelDto>> => {
-
+        console.log(`[queryRepository]: getAllUsers started...`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const searchQuery = [];
         let filter = {};
-        if (searchLoginTerm) searchQuery.push({login: {$regex: searchLoginTerm, $options: 'i'}});
-        if (searchEmailTerm) searchQuery.push({email: {$regex: searchEmailTerm, $options: 'i'}});
+        if (searchLoginTerm) searchQuery.push({
+            'accountData.login': new RegExp(searchLoginTerm, "i")
+        });
+        if (searchEmailTerm) searchQuery.push({
+            'accountData.email': new RegExp(searchEmailTerm, "i")
+        });
         if (searchQuery.length > 0) filter = {$or: searchQuery};
+        console.log(filter);
         const totalCount = await UserModel.countDocuments(filter);
+        console.log(totalCount);
         const result = await UserModel.find(filter)
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
