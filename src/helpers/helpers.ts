@@ -12,10 +12,10 @@ import {CONFIRM_EMAIL_LIFE_PERIOD, COOKIE_LIFE_PERIOD, RECOVERY_PASSWORD_CODE_LI
 dotenv.config();
 
 export const delay = async (ms: number) => {
-    return new Promise <void>((resolve, reject) => {
-        setTimeout(()=>resolve(), ms)
-    })
-}
+    return new Promise<void>((resolve, reject) => {
+        setTimeout(() => resolve(), ms);
+    });
+};
 
 export const parseQueryPaginator = (req: Request): PaginatorOptionInterface => {
     return {
@@ -29,12 +29,14 @@ export const parseQueryPaginator = (req: Request): PaginatorOptionInterface => {
 export const pagesCount = (totalCount: number, pageSize: number) => Math.ceil(totalCount / pageSize);
 
 export const generatePassHash = (password: string, salt: string): string => {
-    return hash.sha256().update(salt).digest('hex');
+     return hash.sha256().update(salt+password).digest('hex');
 };
 
 export const generateHashSalt = async (): Promise<string> => {
     const salt_base = process.env.HASH_SALT_BASE || '54321';
-    return await bcrypt.genSalt(+salt_base);
+    const passSalt = await bcrypt.genSalt(+salt_base);
+    return passSalt;
+
 };
 
 export const parseUserViewModel = (user: UserEntityWithIdInterface): UserViewModelDto => {
@@ -77,7 +79,7 @@ export const setRefreshTokenToCookie = (res: Response, refreshToken: string) => 
 
 export const getDeviceInfo = (req: Request): { ip: string, title: string } => {
     // const ip = req.get('X-Forwarded-For')|| '00:00:00:00'
-    const ip = req.ip
-    const title = req.get('User-Agent')|| 'no name'
+    const ip = req.ip;
+    const title = req.get('User-Agent') || 'no name';
     return {ip, title};
 };
