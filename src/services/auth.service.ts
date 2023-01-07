@@ -17,6 +17,8 @@ import {DeviceSessionViewModelDto} from "../controllers/dto/deviceSessionViewMod
 import {AuthSessionInDb} from "../repositories/repository-interfaces/auth-session-in-db.interface";
 import {ObjectId} from 'mongodb';
 import {queryRepository} from '../repositories/query.repository';
+import {ResultInterface} from '../types/result.interface';
+import {promises} from 'dns';
 
 export const authService = {
 
@@ -54,15 +56,26 @@ export const authService = {
         if (resend.accepted.length > 0) await usersRepository.saveSendingRecoveryPasswordEmail(user.id, newConfirmationCode, newExpirationDate);
         return true;
     },
-    async confirmPasswordRecovery(newPassword: string, recoveryCode: string) {
-        console.log(`[usersService]:confirmPasswordRecovery`);
+    async confirmPasswordRecovery(newPassword: string, recoveryCode: string): Promise<ResultInterface> {
+        console.log(`[usersService]:confirmPasswordRecovery init...`);
         const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
-        if (!user) return false;
-        console.log(`[usersService]:confirmPasswordRecovery expirationDate: ${user.passwordRecoveryInformation?.expirationDate}`);
-        if(user.passwordRecoveryInformation?.recoveryCode!==recoveryCode) return false
-        if(user.passwordRecoveryInformation?.expirationDate < new Date()) return false
+        if (!user) return {status: false, code: 400, message: 'don\'t find user'};
+        if (user.passwordRecoveryInformation?.recoveryCode !== recoveryCode) {
+            console.log(`[usersService]:confirmPasswordRecovery recoveryCode is wrong`);
+            return {status: false, code: 400, message: 'recoveryCode is wrong'};
+        }
+        if (user.passwordRecoveryInformation?.expirationDate < new Date()) {
+            console.log(`[usersService]:confirmPasswordRecovery recoveryCode is expired`);
+            return {status: false, code: 400, message: 'recoveryCode is expired'};
+        }
         const passwordHash = generatePassHash(newPassword, user.accountData!.passwordSalt);
-        return  await usersRepository.confirmRecoveryPassword(user.id, passwordHash);
+        console.log(`[usersService]:confirmPasswordRecovery newPassword is confirmed, save new pass to DB`);
+        const result = await usersRepository.confirmRecoveryPassword(user.id, passwordHash);
+        if (!result) {
+            console.log(`[usersService]:confirmPasswordRecovery error saving to DB`);
+            return {status: false, code: 500, message: 'error saving to DB'};
+        }
+        return {status: true, code: 204, message: 'ok'};
     },
     async resendingEmail(id: string): Promise<boolean> {
         console.log(`[usersService]:resendingEmail `);
