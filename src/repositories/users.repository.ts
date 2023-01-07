@@ -1,4 +1,4 @@
-import {UserModel, usersCollection} from "../adapters/dbAdapters";
+import {UserModel} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {UserEntity} from "../services/entities/user.entity";
 import {UserEntityWithIdInterface} from "./repository-interfaces/user-entity-with-id.interface";
@@ -44,7 +44,7 @@ export const usersRepository = {
         return this.parseUserInDbEntity(result);
     },
     async findUserByPasswordRecoveryCode(value: string): Promise<UserEntityWithIdInterface | null> {
-        console.log(`[usersRepository]: findUser by confirmationCode`);
+        console.log(`[usersRepository]: findUserByPasswordRecoveryCode starts...`);
         const result = await UserModel.findOne({'passwordRecoveryInformation.recoveryCode': value});
         if (!result) return null;
         return this.parseUserInDbEntity(result);
@@ -55,10 +55,6 @@ export const usersRepository = {
         const result = await userInstance.save();
         if (!result) return null;
         return this.parseUserInDbEntity(result);
-        //
-        // const result = await usersCollection.insertOne(user);
-        // if (result.acknowledged) return result.insertedId.toString();
-        // return null;
     },
     async deleteUserById(id: string): Promise<boolean> {
         console.log(`[usersRepository]: deleteUserById: ${id}`);
