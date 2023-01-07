@@ -4,6 +4,7 @@ import {APIErrorResultModel} from "../controllers/dto/apiErrorResult.dto";
 import {queryRepository} from "../repositories/query.repository";
 import {usersService} from "../services/users.service";
 import {authService} from "../services/auth.service";
+import {usersRepository} from '../repositories/users.repository';
 
 export const validatorMiddleware = {
     validateRegistrationConfirmationCodeModel: () => [
@@ -100,6 +101,14 @@ export const validatorMiddleware = {
         body('recoveryCode')
             .exists()
             .withMessage('recoveryCode is required')
+            // .custom(async (recoveryCode) => {
+            //     const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
+            //     if (!user) throw new Error();
+            //     if(!user.passwordRecoveryInformation) throw new Error();
+            //     if(user.passwordRecoveryInformation.recoveryCode!==recoveryCode) throw new Error()
+            //     if(user.passwordRecoveryInformation.expirationDate < new Date()) throw new Error()
+            // })
+            // .withMessage('recoveryCode is wrong')
     ],
     validateBlogInputModel: () => [
         body('name')
