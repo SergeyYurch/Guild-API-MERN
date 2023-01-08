@@ -1,10 +1,6 @@
 import request from 'supertest';
 import {app} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
-import {usersRepository} from "../src/repositories/users.repository";
-import {UserEntityWithIdInterface} from '../src/repositories/repository-interfaces/user-entity-with-id.interface';
-import {usersService} from '../src/services/users.service';
-import {UserViewModelDto} from '../src/controllers/dto/userViewModel.dto';
 import {sub} from 'date-fns';
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
