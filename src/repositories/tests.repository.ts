@@ -1,15 +1,12 @@
 import {
-    RepositoryInterface
-} from "./interfaces/repository.interface";
-import {
     AccessAttemptModel, BlogModel,
     CommentModel,
     SessionModel, UserModel,
     PostModel,
 } from "../adapters/dbAdapters";
 
-export const testsRepository: RepositoryInterface = {
-    dataBaseClear: async (): Promise<boolean> => {
+export class TestsRepository {
+    async dataBaseClear(): Promise<boolean>{
         console.log(`[repository]:start dataBaseClear`);
         const resultBlogs = await BlogModel.deleteMany({});
         const resultPosts = await PostModel.deleteMany({});
@@ -24,5 +21,4 @@ export const testsRepository: RepositoryInterface = {
             && resultDeviceAuthSession.acknowledged
             && resultAccessAttempt.acknowledged;
     }
-
-};
+}
