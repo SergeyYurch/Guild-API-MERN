@@ -1,6 +1,6 @@
 import {BlogViewModelDto} from "../../controllers/dto/blogViewModel.dto";
 import {PostViewModelDto} from "../../controllers/dto/postViewModel.dto";
-import {PaginatorDto} from "../../controllers/dto/paginatorDto";
+import {PaginatorDto} from "../../controllers/dto/paginator.dto";
 import {UserViewModelDto} from "../../controllers/dto/userViewModel.dto";
 import {WithId} from "mongodb";
 import {CommentEntity} from "../../services/entities/comment.entity";
