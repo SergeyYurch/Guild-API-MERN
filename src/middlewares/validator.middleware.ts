@@ -1,10 +1,13 @@
 import {Request, Response, NextFunction} from "express";
 import {body, validationResult} from 'express-validator';
 import {APIErrorResultModel} from "../controllers/dto/apiErrorResult.dto";
-import {queryRepository} from "../repositories/query.repository";
-import {usersService} from "../services/users.service";
-import {authService} from "../services/auth.service";
-import {usersRepository} from '../repositories/users.repository';
+import {QueryRepository} from "../repositories/query.repository";
+import {UsersService, } from "../services/users.service";
+import {AuthService, } from "../services/auth.service";
+
+const usersService = new UsersService();
+const authService = new AuthService();
+const queryRepository = new QueryRepository()
 
 export const validatorMiddleware = {
     validateRegistrationConfirmationCodeModel: () => [
