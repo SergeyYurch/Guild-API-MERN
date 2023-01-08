@@ -1,15 +1,16 @@
 import request from 'supertest';
 import {app} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
-import {usersRepository} from "../src/repositories/users.repository";
 import {UserEntityWithIdInterface} from '../src/repositories/repository-interfaces/user-entity-with-id.interface';
-import {usersService} from '../src/services/users.service';
+import {UsersService} from '../src/services/users.service';
 import {UserViewModelDto} from '../src/controllers/dto/userViewModel.dto';
-import {sub} from 'date-fns';
-import {queryRepository} from '../src/repositories/query.repository';
+import {QueryRepository} from '../src/repositories/query.repository';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 import {delay} from '../src/helpers/helpers';
+
+const usersService = new UsersService()
+const queryRepository = new QueryRepository()
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
