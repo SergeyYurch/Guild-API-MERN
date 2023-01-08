@@ -4,11 +4,11 @@ import {
     RequestWithBody,
     RequestWithId
 } from "../types/request.type";
-import {queryRepository} from "../repositories/query.repository";
+import {QueryRepository} from "../repositories/query.repository";
 import {PaginatorOptionInterface} from "../repositories/interfaces/query.repository.interface";
 import {parseQueryPaginator} from "../helpers/helpers";
 import {ObjectId} from "mongodb";
-import {usersService} from "../services/users.service";
+import {UsersService} from "../services/users.service";
 import {UserInputModelDto} from "./dto/userInputModel.dto";
 import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
 
@@ -18,52 +18,69 @@ const {
     validateUserInputModel,
     validateResult
 } = validatorMiddleware;
-const {createNewUser, deleteUserById, findUserByEmailOrLogin, getUserById} = usersService;
-const {getAllUsers} = queryRepository;
+
+// const {createNewUser, deleteUserById, findUserByEmailOrLogin, getUserById} = usersService;
 
 
-usersRouter.get('/:id',
-    async (req: RequestWithId, res: Response) => {
+export class UserController {
+    private usersService: UsersService;
+    private queryRepository: QueryRepository;
+
+    constructor() {
+        this.usersService = new UsersService();
+        this.queryRepository = new QueryRepository();
+    }
+
+    async getUser(req: RequestWithId, res: Response) {
         const id = req.params.id;
         if (!ObjectId.isValid(id)) return res.sendStatus(404);
-        const user = await getUserById(id);
+        const user = await this.usersService.getUserById(id);
         if (!user) return res.sendStatus(404);
         return res.status(204).send(user);
-    });
+    }
 
+    async createUser(req: RequestWithBody<UserInputModelDto>, res: Response) {
+        const {login, password, email} = req.body;
+        if (await this.usersService.findUserByEmailOrLogin(login)) return res.sendStatus(400);
+        if (await this.usersService.findUserByEmailOrLogin(email)) return res.sendStatus(400);
+        const result = await this.usersService.createNewUser(login, email, password, true);
+        return result ? res.status(201).json(result) : res.sendStatus(500);
+    }
+
+    async getUsers(req: Request, res: Response) {
+        console.log(`[userController]: GET https//{host}/users  init...`);
+        const searchLoginTerm: string | null = req.query.searchLoginTerm ? String(req.query.searchLoginTerm) : null;
+        const searchEmailTerm: string | null = req.query.searchEmailTerm ? String(req.query.searchEmailTerm) : null;
+        const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
+        const result = await this.queryRepository.getAllUsers(paginatorOption, searchLoginTerm, searchEmailTerm);
+        return res.status(200).json(result);
+    }
+
+    async deleteUser(req: RequestWithId, res: Response) {
+        const id = req.params.id;
+        if (!ObjectId.isValid(id)) return res.sendStatus(404);
+        const isExistUser = await this.usersService.getUserById(id);
+        if (!isExistUser) return res.sendStatus(404);
+        const result = await this.usersService.deleteUserById(id);
+        return result ? res.sendStatus(204) : res.sendStatus(401);
+    }
+}
+
+const userController = new UserController();
+
+usersRouter.get('/:id',
+    userController.getUser.bind(userController));
 
 usersRouter.post('/',
     authBasicMiddleware,
     validateUserInputModel(),
     validateResult,
-    async (req: RequestWithBody<UserInputModelDto>, res: Response) => {
-        const {login, password, email} = req.body;
-        if (await findUserByEmailOrLogin(login)
-            || await findUserByEmailOrLogin(email)) return res.sendStatus(400);
-        const result = await createNewUser(login, email, password, true);
-        return result ? res.status(201).json(result) : res.sendStatus(500);
-    });
-
+    userController.createUser.bind(userController));
 
 usersRouter.get('/',
     authBasicMiddleware,
-    async (req: Request, res: Response) => {
-        console.log(`[userController]: GET https//{host}/users  init...`);
-        const searchLoginTerm: string | null = req.query.searchLoginTerm ? String(req.query.searchLoginTerm) : null;
-        const searchEmailTerm: string | null = req.query.searchEmailTerm ? String(req.query.searchEmailTerm) : null;
-        const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
-        console.log(searchLoginTerm);
-        const result = await getAllUsers(paginatorOption, searchLoginTerm, searchEmailTerm);
-        return res.status(200).json(result);
-    });
+    userController.getUsers.bind(userController));
 
 usersRouter.delete('/:id',
     authBasicMiddleware,
-    async (req: RequestWithId, res: Response) => {
-        const id = req.params.id;
-        if (!ObjectId.isValid(id)) return res.sendStatus(404);
-        const isExistUser = await getUserById(id);
-        if (!isExistUser) return res.sendStatus(404);
-        const result = await deleteUserById(id);
-        return result ? res.sendStatus(204) : res.sendStatus(401);
-    });
+    userController.deleteUser.bind(userController));
