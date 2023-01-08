@@ -9,15 +9,15 @@ import {
 } from "./interfaces/query.repository.interface";
 import {BlogViewModelDto} from "../controllers/dto/blogViewModel.dto";
 import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
-import {PaginatorDto} from "../controllers/dto/paginatorDto";
+import {PaginatorDto} from "../controllers/dto/paginator.dto";
 import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
 import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
 import {usersRepository} from './users.repository';
 
-export const queryRepository = {
-    getCommentById: async (id: string): Promise<CommentViewModelDto | null> => {
+export class QueryRepository {
+    async getCommentById(id: string): Promise<CommentViewModelDto | null> {
         const result = await CommentModel.findById(id);
         if (!result) return null;
         return {
@@ -27,11 +27,12 @@ export const queryRepository = {
             content: result.content,
             createdAt: result.createdAt
         };
-    },
-    findAllCommentsByUserId: async (
+    }
+
+    async findAllCommentsByUserId(
         userId: string,
         paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<CommentViewModelDto>> => {
+    ): Promise<PaginatorDto<CommentViewModelDto>> {
         console.log(`[queryRepository]: findAllCommentsByUserId:${userId}`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
 
@@ -55,11 +56,12 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
-    findAllCommentsByPostId: async (
+    }
+
+    async findAllCommentsByPostId(
         postId: string,
         paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<CommentViewModelDto>> => {
+    ): Promise<PaginatorDto<CommentViewModelDto>> {
         console.log(`[queryRepository]: findAllCommentsByPostId:${postId}`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const totalCount = await CommentModel.countDocuments({postId});
@@ -81,11 +83,12 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
-    getAllBlogs: async (
+    }
+
+    async getAllBlogs(
         searchNameTerm: string | null = null,
         paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<BlogViewModelDto>> => {
+    ): Promise<PaginatorDto<BlogViewModelDto>> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllBlogs`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const filter = searchNameTerm ? {'name': {$regex: searchNameTerm, $options: 'i'}} : {};
@@ -109,11 +112,12 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
-    getPostsForBlog: async (
+    }
+
+    async getPostsForBlog(
         blogId: string,
         paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<PostViewModelDto>> => {
+    ): Promise<PaginatorDto<PostViewModelDto>> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostsForBlog ${blogId}.`);
         const filter = {blogId: blogId};
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
@@ -139,8 +143,9 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
-    getBlogById: async (id: string): Promise<BlogViewModelDto | null> => {
+    }
+
+    async getBlogById(id: string): Promise<BlogViewModelDto | null> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getBlogById`);
         const result = await BlogModel.findById(id);
         if (!result) return null;
@@ -152,10 +157,11 @@ export const queryRepository = {
             websiteUrl,
             createdAt
         };
-    },
-    getAllPosts: async (
+    }
+
+    async getAllPosts(
         paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<PostViewModelDto>> => {
+    ): Promise<PaginatorDto<PostViewModelDto>> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllPosts`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const totalCount = await PostModel.countDocuments({});
@@ -180,8 +186,9 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
-    getPostById: async (id: string): Promise<PostViewModelDto | null> => {
+    }
+
+    async getPostById(id: string): Promise<PostViewModelDto | null> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostById`);
         const result = await PostModel.findById(id);
         if (!result) return null;
@@ -195,12 +202,12 @@ export const queryRepository = {
             blogName,
             createdAt
         };
-    },
+    }
 
-    getAllUsers: async (paginatorOption: PaginatorOptionInterface,
-                        searchLoginTerm: string | null,
-                        searchEmailTerm: string | null
-    ): Promise<PaginatorDto<UserViewModelDto>> => {
+    async getAllUsers(paginatorOption: PaginatorOptionInterface,
+                      searchLoginTerm: string | null,
+                      searchEmailTerm: string | null
+    ): Promise<PaginatorDto<UserViewModelDto>> {
         console.log(`[queryRepository]: getAllUsers started...`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const searchQuery = [];
@@ -232,12 +239,13 @@ export const queryRepository = {
             totalCount,
             items
         };
-    },
+    }
+
     async getUserById(id: string): Promise<UserEntityWithIdInterface | null> {
         console.log(`[queryRepository]: getUserById ${id}`);
         const result = await UserModel.findById(id);
         console.log(`[queryRepository]: getUserById ${id} `);
         if (!result) return null;
         return usersRepository.parseUserInDbEntity(result);
-    },
+    }
 };
