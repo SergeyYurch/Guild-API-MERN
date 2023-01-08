@@ -1,7 +1,8 @@
 import {Request, Response, NextFunction} from 'express';
 import {jwtService} from "../utils/jwt-service";
-import {usersService} from "../services/users.service";
+import {UsersService} from "../services/users.service";
 
+const usersService = new UsersService()
 export const authBearerMiddleware =async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization) {
         return res.sendStatus(401);
