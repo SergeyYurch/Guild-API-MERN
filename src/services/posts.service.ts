@@ -1,31 +1,30 @@
 import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
 import {PostInputModelDto} from "../controllers/dto/postInputModel.dto";
 import {PostEntity} from "./entities/post.entity";
-import {PostsServiceInterface} from "./interfaces/posts.service.interface";
 import {PostEditEntity} from "./entities/postEdit.entity";
-import {queryRepository} from "../repositories/query.repository";
-import {postsRepository} from "../repositories/posts.repository";
+import {QueryRepository} from "../repositories/query.repository";
+import {PostsRepository} from "../repositories/posts.repository";
 
-const {
-    createNewPost,
-    updatePostById,
-    deletePostById,
-} = postsRepository;
 
-const {getBlogById} = queryRepository
+export class PostsService {
+    private postsRepository: PostsRepository;
+    private queryRepository: QueryRepository;
 
-export const postsService:PostsServiceInterface = {
+    constructor() {
+        this.postsRepository = new PostsRepository();
+        this.queryRepository = new QueryRepository();
+    }
 
-    createNewPost: async (post: PostInputModelDto): Promise<PostViewModelDto | null> => {
+    async createNewPost(post: PostInputModelDto): Promise<PostViewModelDto | null> {
         const {title, shortDescription, content, blogId} = post;
-        const blogName = (await getBlogById(blogId))?.name
-        if (!blogName) return null ;
+        const blogName = (await this.queryRepository.getBlogById(blogId))?.name;
+        if (!blogName) return null;
         const createdAt = new Date().toISOString();
         const newPost: PostEntity = {
             title, shortDescription, content, blogId, blogName, createdAt
         };
-        const postInDb = await createNewPost(newPost);
-        if(!postInDb) return null
+        const postInDb = await this.postsRepository.createNewPost(newPost);
+        if (!postInDb) return null;
         return {
             id: postInDb._id.toString(),
             title: postInDb.title,
@@ -33,13 +32,13 @@ export const postsService:PostsServiceInterface = {
             content: postInDb.content,
             blogId: postInDb.blogId,
             blogName: postInDb.blogName,
-            createdAt:postInDb.createdAt
+            createdAt: postInDb.createdAt
         };
-    },
+    }
 
-    editPostById: async (id: string, post: PostInputModelDto): Promise<boolean> => {
+    async editPostById(id: string, post: PostInputModelDto): Promise<boolean> {
         const {title, shortDescription, content, blogId} = post;
-        const blogName =(await getBlogById(blogId))?.name
+        const blogName = (await this.queryRepository.getBlogById(blogId))?.name;
         if (!blogName) return false;
         const postToDb: PostEditEntity = {
             title,
@@ -48,10 +47,10 @@ export const postsService:PostsServiceInterface = {
             shortDescription,
             blogName
         };
-        return await updatePostById(id, postToDb);
-    },
+        return await this.postsRepository.updatePostById(id, postToDb);
+    }
 
-    deletePostById: async (id: string): Promise<boolean> => {
-        return deletePostById(id);
-    },
-};
+    async deletePostById(id: string): Promise<boolean> {
+        return this.postsRepository.deletePostById(id);
+    }
+}
