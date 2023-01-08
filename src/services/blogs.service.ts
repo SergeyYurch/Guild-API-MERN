@@ -1,28 +1,27 @@
 import {BlogViewModelDto} from "../controllers/dto/blogViewModel.dto";
-import {BlogsServiceInterface} from "./interfaces/blogs.service.interface";
 import {BlogInputModelDto} from "../controllers/dto/blogInputModel.dto";
 import {BlogEntity} from "./entities/blog.entity";
 import {BlogEditEntity} from "./entities/blog-edit.entity";
-import {queryRepository} from "../repositories/query.repository";
-import {blogsRepository} from "../repositories/blogs.repository";
-
-const {
-    createNewBlog,
-    updateBlogById,
-    deleteBlogById
-} = blogsRepository;
-
-const { getBlogById} = queryRepository
-export const blogsService:BlogsServiceInterface = {
+import {QueryRepository} from "../repositories/query.repository";
+import {BlogsRepository} from "../repositories/blogs.repository";
 
 
-    createNewBlog: async (blog: BlogInputModelDto): Promise<BlogViewModelDto | null> => {
+export class BlogsService {
+    private blogsRepository: BlogsRepository;
+    private queryRepository: QueryRepository;
+
+    constructor() {
+        this.blogsRepository = new BlogsRepository();
+        this.queryRepository = new QueryRepository();
+    }
+
+    async createNewBlog(blog: BlogInputModelDto): Promise<BlogViewModelDto | null> {
         const {name, websiteUrl, description} = blog;
         const createdAt = new Date().toISOString();
         const newBlog: BlogEntity = {
             name, websiteUrl, description, createdAt
         };
-        const blogInDb = await createNewBlog(newBlog);
+        const blogInDb = await this.blogsRepository.createNewBlog(newBlog);
         if (!blogInDb) return null;
         return {
             id: blogInDb._id.toString(),
@@ -31,23 +30,21 @@ export const blogsService:BlogsServiceInterface = {
             websiteUrl: blogInDb.websiteUrl,
             createdAt: blogInDb.createdAt
         };
-    },
+    }
 
-
-
-    editBlogById: async (id: string, blog: BlogInputModelDto): Promise<boolean> => {
+    async editBlogById(id: string, blog: BlogInputModelDto): Promise<boolean> {
         const {name, websiteUrl, description} = blog;
         const blogToDb: BlogEditEntity = {
             name,
             websiteUrl,
             description,
         };
-        return await updateBlogById(id, blogToDb);
-    },
+        return await this.blogsRepository.updateBlogById(id, blogToDb);
+    }
 
-    deleteBlogById: async (id: string): Promise<boolean> => {
-        const blog = await getBlogById(id);
+    async deleteBlogById(id: string): Promise<boolean> {
+        const blog = await this.queryRepository.getBlogById(id);
         if (!blog) return false;
-        return await deleteBlogById(id);
-    },
-};
+        return await this.blogsRepository.deleteBlogById(id);
+    }
+}
