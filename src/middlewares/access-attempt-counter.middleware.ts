@@ -1,6 +1,8 @@
 import {Request, Response, NextFunction} from 'express';
-import {accessAttemptRepository} from "../repositories/access-attempt.repository";
+import {AccessAttemptRepository} from "../repositories/access-attempt.repository";
 import {getDeviceInfo} from '../helpers/helpers';
+
+const accessAttemptRepository = new AccessAttemptRepository()
 
 export const accessAttemptCounter = async (req: Request, res: Response, next: NextFunction) => {
     const endpoint = req.originalUrl;
