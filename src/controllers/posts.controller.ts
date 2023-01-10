@@ -15,6 +15,8 @@ import {CommentInputModelDto} from "./dto/commentInputModel.dto";
 import {CommentsService} from "../services/comments.service";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
+import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
+import {QueryCommentsRepository} from '../repositories/queryComments.repository';
 
 export const postsRouter = Router();
 const {
@@ -27,15 +29,17 @@ const {
 
 export class PostsController {
     private queryRepository: QueryRepository;
+    private queryCommentsRepository: QueryCommentsRepository;
     private usersService: UsersService;
     private commentsService: CommentsService;
-    private postsService:PostsService
+    private postsService: PostsService;
 
     constructor() {
         this.queryRepository = new QueryRepository();
+        this.queryCommentsRepository = new QueryCommentsRepository();
         this.usersService = new UsersService();
         this.commentsService = new CommentsService();
-        this.postsService = new PostsService()
+        this.postsService = new PostsService();
     }
 
     async getPosts(req: Request, res: Response) {
@@ -67,7 +71,7 @@ export class PostsController {
             content: body.content,
             shortDescription: body.shortDescription
         };
-        const result =  await this.postsService.editPostById(id, post);
+        const result = await this.postsService.editPostById(id, post);
         return result ? res.sendStatus(204) : res.sendStatus(404);
     }
 
@@ -79,6 +83,7 @@ export class PostsController {
     }
 
     async createCommentForPost(req: RequestWithIdAndBody<CommentInputModelDto>, res: Response) {
+        console.log(`[postController]:createCommentForPost `);
         const postId = req.params.postId;
         const userId = req.user!.id;
         if (!userId) return res.sendStatus(401);
@@ -94,11 +99,12 @@ export class PostsController {
         return createdComment ? res.status(201).send(createdComment) : res.sendStatus(500);
     }
 
-    async getCommentsFOrPost(req: RequestWithIdAndBody<CommentInputModelDto>, res: Response) {
+    async getCommentsForPost(req: RequestWithIdAndBody<CommentInputModelDto>, res: Response) {
+        const userId = req.user?.id || null;
         const postId = req.params.postId;
         if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId))) return res.sendStatus(404);
         const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
-        const result = await this.queryRepository.findAllCommentsByPostId(postId, paginatorOption);
+        const result = await this.queryCommentsRepository.findAllCommentsByPostId(userId, postId, paginatorOption);
         return result ? res.status(200).json(result) : res.sendStatus(500);
     }
 }
@@ -117,6 +123,7 @@ postsRouter.post(
 );
 
 postsRouter.get('/:id',
+    authCheckBearerMiddleware,
     postsController.getPost.bind(postsController));
 
 postsRouter.put(
@@ -133,8 +140,7 @@ postsRouter.delete('/:id',
     postsController.deletePost.bind(postsController)
 );
 
-postsRouter.post(
-    '/:postId/comments',
+postsRouter.post('/:postId/comments',
     authBearerMiddleware,
     validateCommentInputModel(),
     validateResult,
@@ -142,5 +148,6 @@ postsRouter.post(
 );
 
 postsRouter.get('/:postId/comments',
-    postsController.getCommentsFOrPost.bind(postsController)
+    authCheckBearerMiddleware,
+    postsController.getCommentsForPost.bind(postsController)
 );
