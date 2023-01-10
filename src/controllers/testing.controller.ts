@@ -1,13 +1,14 @@
-import {Router, Request, Response} from "express";
+import {Request, Response} from "express";
 import {TestsRepository} from "../repositories/tests.repository";
 
-export const testingRouter = Router();
 
 export class TestingController {
-    private testsRepository:TestsRepository
-    constructor() {
-        this.testsRepository = new TestsRepository()
+
+    constructor(
+        protected testsRepository: TestsRepository
+    ) {
     }
+
     async clearDataBase(req: Request, res: Response) {
         const result = await this.testsRepository.dataBaseClear();
         if (result) {
@@ -17,8 +18,3 @@ export class TestingController {
         }
     }
 }
-const testingController = new TestingController()
-
-testingRouter.delete('/all-data',
-    testingController.clearDataBase.bind(testingController)
-);

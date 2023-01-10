@@ -1,39 +1,19 @@
-import {Router, Response, Request} from "express";
-import {validatorMiddleware} from "../middlewares/validator.middleware";
+import {Response, Request} from "express";
 import {RequestWithBody} from "../types/request.type";
 import {LoginInputModel} from "./dto/inputModels/loginInputModel.dto";
 import {UsersService} from "../services/users.service";
-import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
 import {UserInputModelDto} from "./dto/inputModels/userInputModel.dto";
 import {RegistrationEmailResendingInputModelDto} from "./dto/inputModels/registrationEmailResendingInputModel.dto";
 import {AuthService} from "../services/auth.service";
 import {getDeviceInfo, setRefreshTokenToCookie} from "../helpers/helpers";
-import {
-    refreshTokenValidator
-} from "../middlewares/refresh-token-validator.middleware";
-import {accessAttemptCounter} from "../middlewares/access-attempt-counter.middleware";
 import {PasswordRecoveryInputModel} from './dto/inputModels/passwordRecoveryInputModel.dto';
 import {NewPasswordRecoveryInputModel} from './dto/inputModels/newPasswordRecoveryInputModel.dto';
 
-export const authRouter = Router();
-
-const {
-    validateLoginInputModel,
-    validateUserInputModel,
-    validateRegistrationEmailResendingModel,
-    validateRegistrationConfirmationCodeModel,
-    validateResult,
-    validatePasswordRecoveryInputModel,
-    validateNewPasswordRecoveryInputModel
-} = validatorMiddleware;
-
-class AuthController {
-    usersService: UsersService;
-    authService: AuthService;
-
-    constructor() {
-        this.usersService = new UsersService();
-        this.authService = new AuthService()
+export class AuthController {
+    constructor(
+        protected usersService: UsersService,
+        protected authService: AuthService
+    ) {
     }
 
     async userLogin(req: RequestWithBody<LoginInputModel>, res: Response) {
@@ -172,65 +152,3 @@ class AuthController {
         }
     }
 }
-
-const authController = new AuthController();
-authRouter.post('/login',
-    accessAttemptCounter,
-    validateLoginInputModel(),
-    validateResult,
-    authController.userLogin.bind(authController)
-);
-
-authRouter.get('/me',
-    authBearerMiddleware,
-    authController.getAuthInfoForUser.bind(authController)
-);
-
-authRouter.post('/registration',
-    accessAttemptCounter,
-    validateUserInputModel(),
-    validateResult,
-    authController.userRegistration.bind(authController)
-);
-
-authRouter.post('/registration-confirmation',
-    accessAttemptCounter,
-    validateRegistrationConfirmationCodeModel(),
-    validateResult,
-    authController.registrationConfirmation.bind(authController)
-);
-
-
-authRouter.post('/registration-email-resending',
-    accessAttemptCounter,
-    validateRegistrationEmailResendingModel(),
-    validateResult,
-    authController.registrationEmailResending.bind(authController)
-);
-
-authRouter.post('/refresh-token',
-    accessAttemptCounter,
-    refreshTokenValidator,
-    authController.refreshToken.bind(authController)
-);
-
-authRouter.post('/logout',
-    refreshTokenValidator,
-    authController.userLogout.bind(authController)
-);
-
-
-authRouter.post('/password-recovery',
-    accessAttemptCounter,
-    validatePasswordRecoveryInputModel(),
-    validateResult,
-    authController.passwordRecovery.bind(authController)
-);
-
-authRouter.post('/new-password',
-    accessAttemptCounter,
-    validateNewPasswordRecoveryInputModel(),
-    validateResult,
-    authController.createNewPassword.bind(authController)
-);
-

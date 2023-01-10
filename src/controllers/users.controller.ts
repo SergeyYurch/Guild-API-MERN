@@ -1,5 +1,4 @@
-import {Router, Request, Response} from "express";
-import {validatorMiddleware} from "../middlewares/validator.middleware";
+import {Request, Response} from "express";
 import {
     RequestWithBody,
     RequestWithId
@@ -10,25 +9,13 @@ import {parseQueryPaginator} from "../helpers/helpers";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
 import {UserInputModelDto} from "./dto/inputModels/userInputModel.dto";
-import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
-
-export const usersRouter = Router();
-
-const {
-    validateUserInputModel,
-    validateResult
-} = validatorMiddleware;
-
-// const {createNewUser, deleteUserById, findUserByEmailOrLogin, getUserById} = usersService;
-
 
 export class UserController {
-    private usersService: UsersService;
-    private queryRepository: QueryRepository;
 
-    constructor() {
-        this.usersService = new UsersService();
-        this.queryRepository = new QueryRepository();
+    constructor(
+        protected usersService: UsersService,
+        protected queryRepository: QueryRepository
+    ) {
     }
 
     async getUser(req: RequestWithId, res: Response) {
@@ -65,22 +52,3 @@ export class UserController {
         return result ? res.sendStatus(204) : res.sendStatus(401);
     }
 }
-
-const userController = new UserController();
-
-usersRouter.get('/:id',
-    userController.getUser.bind(userController));
-
-usersRouter.post('/',
-    authBasicMiddleware,
-    validateUserInputModel(),
-    validateResult,
-    userController.createUser.bind(userController));
-
-usersRouter.get('/',
-    authBasicMiddleware,
-    userController.getUsers.bind(userController));
-
-usersRouter.delete('/:id',
-    authBasicMiddleware,
-    userController.deleteUser.bind(userController));

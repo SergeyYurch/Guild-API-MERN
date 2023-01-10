@@ -7,12 +7,10 @@ import {PostsRepository} from "../repositories/posts.repository";
 
 
 export class PostsService {
-    private postsRepository: PostsRepository;
-    private queryRepository: QueryRepository;
-
-    constructor() {
-        this.postsRepository = new PostsRepository();
-        this.queryRepository = new QueryRepository();
+    constructor(
+        protected postsRepository: PostsRepository,
+        protected queryRepository: QueryRepository
+    ) {
     }
 
     async createNewPost(post: PostInputModelDto): Promise<PostViewModelDto | null> {

@@ -1,16 +1,15 @@
-import {Router, Response, Request} from "express";
+import {Response, Request} from "express";
 import {RequestWithId} from "../types/request.type";
 import {ObjectId} from "mongodb";
 import {AuthService} from "../services/auth.service";
-import {refreshTokenValidator} from "../middlewares/refresh-token-validator.middleware";
 import {jwtService} from "../utils/jwt-service";
 
-export const securityRouter = Router();
 
 export class SecurityController {
-    private authService:AuthService
-    constructor() {
-        this.authService = new AuthService()
+
+    constructor(
+        protected authService: AuthService
+    ) {
     }
 
     async getDeviceSessions(req: Request, res: Response) {
@@ -38,7 +37,7 @@ export class SecurityController {
         }
     }
 
-    async  deleteDeviceSession(req: RequestWithId, res: Response) {
+    async deleteDeviceSession(req: RequestWithId, res: Response) {
         console.log(`!!!![securityRouter]:DELETE/devices/deviceId`);
         try {
             const refreshToken = req.cookies.refreshToken;
@@ -57,22 +56,3 @@ export class SecurityController {
         }
     }
 }
-
-const securityController = new SecurityController();
-
-securityRouter.get('/devices',
-    refreshTokenValidator,
-    securityController.getDeviceSessions.bind(securityController)
-);
-
-securityRouter.delete('/devices',
-    refreshTokenValidator,
-    securityController.deleteOtherDeviceSessions.bind(securityController)
-);
-
-securityRouter.delete('/devices/:deviceId',
-    refreshTokenValidator,
-    securityController.deleteDeviceSession.bind(securityController)
-);
-
-

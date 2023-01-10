@@ -20,14 +20,11 @@ import {QueryRepository} from '../repositories/query.repository';
 import {ResultInterface} from '../types/result.interface';
 
 export class AuthService {
-    private usersRepository: UsersRepository;
-    private queryRepository: QueryRepository;
-    private authSessionsRepository: AuthSessionsRepository;
-
-    constructor() {
-        this.usersRepository = new UsersRepository();
-        this.queryRepository = new QueryRepository();
-        this.authSessionsRepository = new AuthSessionsRepository();
+    constructor(
+        protected usersRepository: UsersRepository,
+        protected queryRepository: QueryRepository,
+        protected authSessionsRepository: AuthSessionsRepository
+    ) {
     }
 
     async findCorrectConfirmationCode(code: string): Promise<boolean> {

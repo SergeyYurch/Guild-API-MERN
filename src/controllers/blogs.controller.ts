@@ -1,5 +1,4 @@
-import {Router, Request, Response} from "express";
-import {validatorMiddleware} from "../middlewares/validator.middleware";
+import {Request, Response} from "express";
 import {BlogsService} from "../services/blogs.service";
 import {
     RequestWithBody,
@@ -11,25 +10,14 @@ import {PaginatorOptionInterface} from "../repositories/interfaces/query.reposit
 import {parseQueryPaginator} from "../helpers/helpers";
 import {PostsService} from "../services/posts.service";
 import {ObjectId} from "mongodb";
-import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
 
-export const blogsRouter = Router();
-
-const {
-    validateBlogInputModel,
-    validatePostInputModel,
-    validateResult
-} = validatorMiddleware;
 
 export class BlogsController {
-    private blogsService: BlogsService;
-    private queryRepository: QueryRepository;
-    private postsService:PostsService;
-
-    constructor() {
-        this.blogsService = new BlogsService();
-        this.queryRepository = new QueryRepository();
-        this.postsService = new PostsService()
+    constructor(
+        protected blogsService: BlogsService,
+        protected queryRepository: QueryRepository,
+        protected postsService: PostsService
+    ) {
     }
 
     async getBlogs(req: Request, res: Response) {
@@ -129,45 +117,3 @@ export class BlogsController {
 
     }
 }
-
-const blogsController = new BlogsController();
-
-
-blogsRouter.get('/',
-    blogsController.getBlogs.bind(blogsController)
-);
-
-blogsRouter.post('/',
-    authBasicMiddleware,
-    validateBlogInputModel(),
-    validateResult,
-    blogsController.createBlog.bind(blogsController)
-);
-
-blogsRouter.get('/:id',
-    blogsController.getBlog.bind(blogsController)
-);
-
-
-blogsRouter.get('/:id/posts',
-    blogsController.getPostsForBlog.bind(blogsController)
-);
-
-blogsRouter.post('/:id/posts',
-    authBasicMiddleware,
-    validatePostInputModel(),
-    validateResult,
-    blogsController.createPostForBlog.bind(blogsController)
-);
-
-blogsRouter.put('/:id',
-    authBasicMiddleware,
-    validateBlogInputModel(),
-    validateResult,
-    blogsController.editBlog.bind(blogsController)
-);
-
-blogsRouter.delete('/:id',
-    authBasicMiddleware,
-    blogsController.deleteBlog.bind(blogsController)
-);

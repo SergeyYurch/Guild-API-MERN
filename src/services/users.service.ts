@@ -12,12 +12,10 @@ import {UserEntityWithIdInterface} from '../repositories/repository-interfaces/u
 import {QueryRepository} from '../repositories/query.repository';
 
 export class UsersService {
-    private usersRepository: UsersRepository;
-    private queryRepository: QueryRepository;
-
-    constructor() {
-        this.usersRepository = new UsersRepository();
-        this.queryRepository = new QueryRepository();
+    constructor(
+        protected usersRepository: UsersRepository,
+        protected queryRepository: QueryRepository
+    ) {
     }
 
     parseUserViewModel(user: UserEntityWithIdInterface): UserViewModelDto {

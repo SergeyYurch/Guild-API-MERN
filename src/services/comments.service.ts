@@ -7,16 +7,12 @@ import {LikesRepository} from '../repositories/likes.repository';
 import {LikeStatusType} from '../repositories/interfaces/likeStatus.type';
 
 
-
 export class CommentsService {
-    private queryRepository: QueryRepository;
-    private commentsRepository: CommentsRepository;
-    private likesRepository:LikesRepository;
-
-    constructor() {
-        this.queryRepository = new QueryRepository();
-        this.commentsRepository = new CommentsRepository();
-        this.likesRepository = new LikesRepository()
+    constructor(
+        protected queryRepository: QueryRepository,
+        protected commentsRepository: CommentsRepository,
+        protected likesRepository: LikesRepository
+    ) {
     }
 
     async createUserComment(content: string, userId: string, postId: string): Promise<CommentViewModelDto | null> {
@@ -56,7 +52,7 @@ export class CommentsService {
         return await this.commentsRepository.editComment(id, comment);
     }
 
-    async changeLikeStatusComment(commentId: string, userId:string, likeStatus: LikeStatusType): Promise<boolean> {
+    async changeLikeStatusComment(commentId: string, userId: string, likeStatus: LikeStatusType): Promise<boolean> {
         console.log(`[commentsService] comment id:${commentId} like/dislike`);
         return await this.likesRepository.updateLikeItem(commentId, userId, likeStatus);
     }

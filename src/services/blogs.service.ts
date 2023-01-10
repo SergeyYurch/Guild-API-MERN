@@ -7,12 +7,10 @@ import {BlogsRepository} from "../repositories/blogs.repository";
 
 
 export class BlogsService {
-    private blogsRepository: BlogsRepository;
-    private queryRepository: QueryRepository;
-
-    constructor() {
-        this.blogsRepository = new BlogsRepository();
-        this.queryRepository = new QueryRepository();
+    constructor(
+        protected blogsRepository: BlogsRepository,
+        protected queryRepository: QueryRepository
+    ) {
     }
 
     async createNewBlog(blog: BlogInputModelDto): Promise<BlogViewModelDto | null> {

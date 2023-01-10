@@ -1,5 +1,4 @@
-import {Router, Request, Response} from "express";
-import {validatorMiddleware} from "../middlewares/validator.middleware";
+import {Request, Response} from "express";
 import {PostsService} from "../services/posts.service";
 import {PostInputModelDto} from "./dto/inputModels/postInputModel.dto";
 import {
@@ -9,37 +8,21 @@ import {
 import {QueryRepository} from "../repositories/query.repository";
 import {PaginatorOptionInterface} from "../repositories/interfaces/query.repository.interface";
 import {parseQueryPaginator} from "../helpers/helpers";
-import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
-import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
 import {CommentInputModelDto} from "./dto/inputModels/commentInputModel.dto";
 import {CommentsService} from "../services/comments.service";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
-import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
 import {QueryCommentsRepository} from '../repositories/queryComments.repository';
 
-export const postsRouter = Router();
-const {
-    validatePostInputModel,
-    validateResult,
-    validateBlogId,
-    validateCommentInputModel
-} = validatorMiddleware;
-
-
 export class PostsController {
-    private queryRepository: QueryRepository;
-    private queryCommentsRepository: QueryCommentsRepository;
-    private usersService: UsersService;
-    private commentsService: CommentsService;
-    private postsService: PostsService;
 
-    constructor() {
-        this.queryRepository = new QueryRepository();
-        this.queryCommentsRepository = new QueryCommentsRepository();
-        this.usersService = new UsersService();
-        this.commentsService = new CommentsService();
-        this.postsService = new PostsService();
+    constructor(
+        protected queryRepository: QueryRepository,
+        protected queryCommentsRepository: QueryCommentsRepository,
+        protected usersService: UsersService,
+        protected commentsService: CommentsService,
+        protected postsService: PostsService
+    ) {
     }
 
     async getPosts(req: Request, res: Response) {
@@ -108,46 +91,3 @@ export class PostsController {
         return result ? res.status(200).json(result) : res.sendStatus(500);
     }
 }
-
-const postsController = new PostsController;
-
-postsRouter.get('/', postsController.getPosts.bind(postsController));
-
-postsRouter.post(
-    '/',
-    authBasicMiddleware,
-    validatePostInputModel(),
-    validateBlogId(),
-    validateResult,
-    postsController.createPost.bind(postsController)
-);
-
-postsRouter.get('/:id',
-    authCheckBearerMiddleware,
-    postsController.getPost.bind(postsController));
-
-postsRouter.put(
-    '/:id',
-    authBasicMiddleware,
-    validatePostInputModel(),
-    validateBlogId(),
-    validateResult,
-    postsController.editPost.bind(postsController)
-);
-
-postsRouter.delete('/:id',
-    authBasicMiddleware,
-    postsController.deletePost.bind(postsController)
-);
-
-postsRouter.post('/:postId/comments',
-    authBearerMiddleware,
-    validateCommentInputModel(),
-    validateResult,
-    postsController.createCommentForPost.bind(postsController)
-);
-
-postsRouter.get('/:postId/comments',
-    authCheckBearerMiddleware,
-    postsController.getCommentsForPost.bind(postsController)
-);

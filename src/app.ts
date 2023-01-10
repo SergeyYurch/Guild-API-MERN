@@ -1,13 +1,14 @@
 import express from 'express';
 import cookieParser from 'cookie-parser'
-import {testingRouter} from "./controllers/testing.controller";
-import {blogsRouter} from "./controllers/blogs.controller";
-import {postsRouter} from "./controllers/posts.controller";
-import {authRouter} from "./controllers/auth.controller";
-import {usersRouter} from "./controllers/users.controller";
-import {commentsRouter} from "./controllers/comments.controller";
 import cors from 'cors'
-import {securityRouter} from './controllers/security.controller';
+
+import {blogsRouter} from './routes/blogs.route';
+import {postsRouter} from './routes/posts.route';
+import {testingRouter} from './routes/testing.route';
+import {authRouter} from './routes/auth.route';
+import {usersRouter} from './routes/users.route';
+import {securityRouter} from './routes/security.route';
+import {commentsRouter} from './routes/comments.route';
 
 export const app = express();
 app.set('trust proxy', true)
