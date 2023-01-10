@@ -14,6 +14,7 @@ import {postSchema} from '../repositories/schemas/post.schema';
 import {commentSchema} from '../repositories/schemas/comment.schema';
 import {sessionSchema} from '../repositories/schemas/session.schema';
 import {accessAttemptSchema} from '../repositories/schemas/access-attempt.schema';
+import {likeSchema} from '../repositories/schemas/like.schema';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ export const UserModel = mongoose.model('User', userSchema)
 export const CommentModel = mongoose.model('Comment', commentSchema)
 export const SessionModel = mongoose.model('Session', sessionSchema)
 export const AccessAttemptModel = mongoose.model('AccessAttempt', accessAttemptSchema)
+export const LikeModel = mongoose.model('Like', likeSchema)
 
 
 
