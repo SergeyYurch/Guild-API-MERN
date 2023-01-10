@@ -1,5 +1,5 @@
 import {AuthSessionEntity} from "../services/entities/auth-session.entity";
-import {deviceAuthSessionsCollection, SessionModel} from "../adapters/dbAdapters";
+import {SessionModel} from "../adapters/dbAdapters";
 import {ObjectId} from "mongodb";
 import {AuthSessionInDb} from "./repository-interfaces/auth-session-in-db.interface";
 
