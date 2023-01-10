@@ -6,5 +6,5 @@ export const commentSchema = new Schema<CommentEntity>( {
     postId:String,
     userId: String,
     userLogin: String,
-    createdAt: String
+    createdAt: String,
 })
