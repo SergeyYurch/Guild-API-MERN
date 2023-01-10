@@ -3,23 +3,33 @@ import {CommentInputModelDto} from "../controllers/dto/commentInputModel.dto";
 import {CommentEntity} from "./entities/comment.entity";
 import {CommentsRepository} from "../repositories/comments.repository";
 import {QueryRepository} from '../repositories/query.repository';
+import {LikesRepository} from '../repositories/likes.repository';
+import {LikeStatusType} from '../controllers/interfaces/likeStatus.type';
+
 
 
 export class CommentsService {
     private queryRepository: QueryRepository;
     private commentsRepository: CommentsRepository;
+    private likesRepository:LikesRepository;
 
     constructor() {
         this.queryRepository = new QueryRepository();
         this.commentsRepository = new CommentsRepository();
+        this.likesRepository = new LikesRepository()
     }
 
     async createUserComment(content: string, userId: string, postId: string): Promise<CommentViewModelDto | null> {
+        console.log(`[commentService]:createUserComment`);
         const createdAt = new Date().toISOString();
         const user = await this.queryRepository.getUserById(userId);
         const userLogin = user!.accountData.login;
         const newUserComment: CommentEntity = {
-            userId, createdAt, content, userLogin, postId
+            userId,
+            createdAt,
+            content,
+            userLogin,
+            postId
         };
         const result = await this.commentsRepository.createNewUserComment(newUserComment);
         if (result) return {
@@ -27,7 +37,12 @@ export class CommentsService {
             content,
             userId,
             userLogin,
-            createdAt
+            createdAt,
+            likesInfo: {
+                likesCount: 0,
+                dislikesCount: 0,
+                myStatus: "None"
+            }
         };
         return null;
     }
@@ -39,5 +54,10 @@ export class CommentsService {
     async editComment(id: string, comment: CommentInputModelDto): Promise<boolean> {
         console.log(`[commentsService] comment id:${id} editing`);
         return await this.commentsRepository.editComment(id, comment);
+    }
+
+    async changeLikeStatusComment(commentId: string, userId:string, likeStatus: LikeStatusType): Promise<boolean> {
+        console.log(`[commentsService] comment id:${commentId} like/dislike`);
+        return await this.likesRepository.updateLikeItem(commentId, userId, likeStatus);
     }
 }
