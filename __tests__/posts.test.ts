@@ -5,8 +5,8 @@ import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 dotenv.config();
-const mongoUri = process.env.MONGO_URI
-const dbName = process.env.DB_NAME
+const mongoUri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
 
 const blog1 = {
     name: 'blog1',
@@ -17,7 +17,7 @@ const blog1 = {
 describe('POST: /posts create new post', () => {
     let blogId = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -199,7 +199,7 @@ describe('GET: /posts get all posts', () => {
 
     let blogId = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -266,11 +266,11 @@ describe('GET: /posts get all posts', () => {
     });
 });
 
-describe('GET:/posts/id get post by ID', () => {
+describe('GET:/posts/{id} get post by ID', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -317,11 +317,11 @@ describe('GET:/posts/id get post by ID', () => {
     });
 });
 
-describe('PUT:/posts/id edit post by ID', () => {
+describe('PUT:/posts/{id} edit post by ID', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -396,11 +396,11 @@ describe('PUT:/posts/id edit post by ID', () => {
     });
 });
 
-describe('DELETE:/posts/id delete', () => {
+describe('DELETE:/posts/{id} delete', () => {
     let id = '';
     let blogId = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
 
@@ -457,7 +457,7 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
     let accessToken = '';
     let token_ = '';
     beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
         await request(app)
             .delete('/testing/all-data');
         //create blog
@@ -499,8 +499,8 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
 
         userId = newUser1.body.id;
         postId = newPost.body.id;
-        accessToken = auth.body.accessToken
-        token_ = auth.body.accessToken
+        accessToken = auth.body.accessToken;
+        token_ = auth.body.accessToken;
     });
     /* Closing database connection after each test. */
     afterAll(async () => {
@@ -509,7 +509,7 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
     it('should return code 401 "Unauthorized" for unauthorized request', async () => {
         await request(app)
             .post(`/posts/${postId}/comments`)
-             .auth('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzkwZjI4MDRkZWJkZmNiOTZhODkxYjgiLCJpYXQiOjE2NzA2NzI4MzQsImV4cCI6MTY3MDcwODgzNH0.g5lv07SozaP8hMeQKfw5NrSXPW7-Lb55ZSpgWzqTU-U',{type: 'bearer'})
+            .auth('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzkwZjI4MDRkZWJkZmNiOTZhODkxYjgiLCJpYXQiOjE2NzA2NzI4MzQsImV4cCI6MTY3MDcwODgzNH0.g5lv07SozaP8hMeQKfw5NrSXPW7-Lb55ZSpgWzqTU-U', {type: 'bearer'})
             //.auth(token_, {type: 'bearer'})
             .send({
                 content: 'comment1comment1comment1',
@@ -551,8 +551,129 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
             content: "comment 1 comment 1 comment 1",
             userId: userId,
             userLogin: "user1",
-            createdAt: expect.any(String)
+            createdAt: expect.any(String),
+            likesInfo: {
+                dislikesCount: 0,
+                likesCount: 0,
+                myStatus: "None"
+            },
         });
 
+    });
+});
+
+describe('GET: /posts/{postId}/comments get all comment for post', () => {
+    let blogId = '';
+    let userId = '';
+    let postId = '';
+    let accessToken = '';
+    let token_ = '';
+    beforeAll(async () => {
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
+        await request(app)
+            .delete('/testing/all-data');
+        //create new blog
+        const newBlog = await request(app)
+            .post('/blogs')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                name: 'blog1',
+                description: "description1",
+                websiteUrl: 'https://youtube1.com'
+            });
+        blogId = newBlog.body.id;
+
+        //create new post
+        const newPost = await request(app)
+            .post('/posts')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                title: 'post1',
+                shortDescription: 'shortDescription1',
+                content: 'content1',
+                blogId: blogId
+            });
+        postId = newPost.body.id;
+
+        //create user in DB
+        const newUser1 = await request(app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                login: "user1",
+                password: "password1",
+                email: "email1@gmail.com"
+            });
+        userId = newUser1.body.id;
+
+        //authorisation user
+        const auth = await request(app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user1",
+                "password": "password1"
+            });
+
+        accessToken = auth.body.accessToken;
+        //user creat two new comments
+        await request(app)
+            .post(`/posts/${postId}/comments`)
+            .auth(accessToken, {type: 'bearer'})
+            .send({
+                content: 'comment 1 comment 1 comment 1',
+            });
+
+        await request(app)
+            .post(`/posts/${postId}/comments`)
+            .auth(accessToken, {type: 'bearer'})
+            .send({
+                content: 'comment 2 comment 2 comment 2',
+            });
+    });
+    /* Closing database connection after each test. */
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
+
+    it('should return code 200 and body with comments', async () => {
+        const comment = await request(app)
+            .get(`/posts/${postId}/comments`)
+            .auth(accessToken, {type: 'bearer'})
+            .expect(200);
+        console.log(comment.body);
+        expect(comment.body).toEqual(
+            {
+                "pagesCount": 1,
+                "page": 1,
+                "pageSize": 10,
+                "totalCount": 2,
+                "items": [
+                    {
+                        id: expect.any(String),
+                        content: "comment 2 comment 2 comment 2",
+                        userId: userId,
+                        userLogin: "user1",
+                        createdAt: expect.any(String),
+                        likesInfo: {
+                            dislikesCount: 0,
+                            likesCount: 0,
+                            myStatus: "None"
+                        }
+                    },
+                    {
+                        id: expect.any(String),
+                        content: "comment 1 comment 1 comment 1",
+                        userId: userId,
+                        userLogin: "user1",
+                        createdAt: expect.any(String),
+                        likesInfo: {
+                            dislikesCount: 0,
+                            likesCount: 0,
+                            myStatus: "None"
+                        }
+                    }
+                ]
+            }
+        );
     });
 });
