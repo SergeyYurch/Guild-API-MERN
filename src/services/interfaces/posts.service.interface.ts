@@ -1,5 +1,5 @@
-import {PostViewModelDto} from "../../controllers/dto/postViewModel.dto";
-import {PostInputModelDto} from "../../controllers/dto/postInputModel.dto";
+import {PostViewModelDto} from "../../controllers/dto/viewModels/postViewModel.dto";
+import {PostInputModelDto} from "../../controllers/dto/inputModels/postInputModel.dto";
 
 export interface PostsServiceInterface {
     createNewPost: (post: PostInputModelDto) => Promise<PostViewModelDto | null>;

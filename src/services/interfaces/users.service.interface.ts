@@ -1,5 +1,5 @@
-import {UserViewModelDto} from "../../controllers/dto/userViewModel.dto";
-import {LoginInputModel} from "../../controllers/dto/loginInputModel.dto";
+import {UserViewModelDto} from "../../controllers/dto/viewModels/userViewModel.dto";
+import {LoginInputModel} from "../../controllers/dto/inputModels/loginInputModel.dto";
 
 export interface UsersServiceInterface {
     registerNewUser: (login: string, email: string, password: string) => Promise<UserViewModelDto | null>;

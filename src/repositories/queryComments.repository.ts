@@ -2,7 +2,7 @@ import {CommentModel,} from "../adapters/dbAdapters";
 import {PaginatorOptionInterface,} from "./interfaces/query.repository.interface";
 import {PaginatorDto} from "../controllers/dto/paginator.dto";
 import {pagesCount} from "../helpers/helpers";
-import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
+import {CommentViewModelDto} from "../controllers/dto/viewModels/commentViewModel.dto";
 import {WithId} from 'mongodb';
 import {CommentEntity} from '../services/entities/comment.entity';
 import {LikesRepository} from './likes.repository';

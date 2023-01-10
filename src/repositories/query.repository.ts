@@ -6,10 +6,10 @@ import {
 import {
     PaginatorOptionInterface,
 } from "./interfaces/query.repository.interface";
-import {BlogViewModelDto} from "../controllers/dto/blogViewModel.dto";
-import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
+import {BlogViewModelDto} from "../controllers/dto/viewModels/blogViewModel.dto";
+import {PostViewModelDto} from "../controllers/dto/viewModels/postViewModel.dto";
 import {PaginatorDto} from "../controllers/dto/paginator.dto";
-import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
+import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
 import {usersRepository} from './users.repository';

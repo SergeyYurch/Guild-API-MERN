@@ -3,7 +3,7 @@ import {app} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
 import {UserEntityWithIdInterface} from '../src/repositories/repository-interfaces/user-entity-with-id.interface';
 import {UsersService} from '../src/services/users.service';
-import {UserViewModelDto} from '../src/controllers/dto/userViewModel.dto';
+import {UserViewModelDto} from '../src/controllers/dto/viewModels/userViewModel.dto';
 import {QueryRepository} from '../src/repositories/query.repository';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';

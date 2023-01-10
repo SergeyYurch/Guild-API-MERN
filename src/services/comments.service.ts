@@ -1,5 +1,5 @@
-import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
-import {CommentInputModelDto} from "../controllers/dto/commentInputModel.dto";
+import {CommentViewModelDto} from "../controllers/dto/viewModels/commentViewModel.dto";
+import {CommentInputModelDto} from "../controllers/dto/inputModels/commentInputModel.dto";
 import {CommentEntity} from "./entities/comment.entity";
 import {CommentsRepository} from "../repositories/comments.repository";
 import {QueryRepository} from '../repositories/query.repository';

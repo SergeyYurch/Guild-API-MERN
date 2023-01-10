@@ -5,7 +5,7 @@ import {
     RequestWithBody,
     RequestWithId, RequestWithIdAndBody,
 } from "../types/request.type";
-import {BlogInputModelDto} from "./dto/blogInputModel.dto";
+import {BlogInputModelDto} from "./dto/inputModels/blogInputModel.dto";
 import {QueryRepository} from "../repositories/query.repository";
 import {PaginatorOptionInterface} from "../repositories/interfaces/query.repository.interface";
 import {parseQueryPaginator} from "../helpers/helpers";

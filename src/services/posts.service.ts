@@ -1,5 +1,5 @@
-import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
-import {PostInputModelDto} from "../controllers/dto/postInputModel.dto";
+import {PostViewModelDto} from "../controllers/dto/viewModels/postViewModel.dto";
+import {PostInputModelDto} from "../controllers/dto/inputModels/postInputModel.dto";
 import {PostEntity} from "./entities/post.entity";
 import {PostEditEntity} from "./entities/postEdit.entity";
 import {QueryRepository} from "../repositories/query.repository";

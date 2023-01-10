@@ -1,19 +1,19 @@
 import {Router, Response, Request} from "express";
 import {validatorMiddleware} from "../middlewares/validator.middleware";
 import {RequestWithBody} from "../types/request.type";
-import {LoginInputModel} from "./dto/loginInputModel.dto";
+import {LoginInputModel} from "./dto/inputModels/loginInputModel.dto";
 import {UsersService} from "../services/users.service";
 import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
-import {UserInputModelDto} from "./dto/userInputModel.dto";
-import {RegistrationEmailResendingModelDto} from "./dto/registrationEmailResendingModel.dto";
+import {UserInputModelDto} from "./dto/inputModels/userInputModel.dto";
+import {RegistrationEmailResendingInputModelDto} from "./dto/inputModels/registrationEmailResendingInputModel.dto";
 import {AuthService} from "../services/auth.service";
 import {getDeviceInfo, setRefreshTokenToCookie} from "../helpers/helpers";
 import {
     refreshTokenValidator
 } from "../middlewares/refresh-token-validator.middleware";
 import {accessAttemptCounter} from "../middlewares/access-attempt-counter.middleware";
-import {PasswordRecoveryInputModel} from './dto/passwordRecoveryInputModel.dto';
-import {NewPasswordRecoveryInputModel} from './dto/newPasswordRecoveryInputModel.dto';
+import {PasswordRecoveryInputModel} from './dto/inputModels/passwordRecoveryInputModel.dto';
+import {NewPasswordRecoveryInputModel} from './dto/inputModels/newPasswordRecoveryInputModel.dto';
 
 export const authRouter = Router();
 
@@ -94,7 +94,7 @@ class AuthController {
         }
     }
 
-    async registrationEmailResending(req: RequestWithBody<RegistrationEmailResendingModelDto>, res: Response) {
+    async registrationEmailResending(req: RequestWithBody<RegistrationEmailResendingInputModelDto>, res: Response) {
         console.log(`[authController]:POST/registration-email-resending run`);
         try {
             const {email} = req.body;

@@ -1,7 +1,7 @@
 import {Router, Request, Response} from "express";
 import {validatorMiddleware} from "../middlewares/validator.middleware";
 import {PostsService} from "../services/posts.service";
-import {PostInputModelDto} from "./dto/postInputModel.dto";
+import {PostInputModelDto} from "./dto/inputModels/postInputModel.dto";
 import {
     RequestWithBody, RequestWithId,
     RequestWithIdAndBody
@@ -11,7 +11,7 @@ import {PaginatorOptionInterface} from "../repositories/interfaces/query.reposit
 import {parseQueryPaginator} from "../helpers/helpers";
 import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
 import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
-import {CommentInputModelDto} from "./dto/commentInputModel.dto";
+import {CommentInputModelDto} from "./dto/inputModels/commentInputModel.dto";
 import {CommentsService} from "../services/comments.service";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";

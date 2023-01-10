@@ -1,6 +1,6 @@
-import {LoginInputModel} from "../controllers/dto/loginInputModel.dto";
+import {LoginInputModel} from "../controllers/dto/inputModels/loginInputModel.dto";
 import {UsersRepository} from "../repositories/users.repository";
-import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
+import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
 import {
     generatePassHash,
     getConfirmationCode,
@@ -13,7 +13,7 @@ import {SentMessageInfo} from "nodemailer";
 import {jwtService} from "../utils/jwt-service";
 import {UserTokensPairInterface} from "./entities/user-tokens-pair.interface";
 import {AuthSessionsRepository} from "../repositories/auth-sessions.repository";
-import {DeviceSessionViewModelDto} from "../controllers/dto/deviceSessionViewModel.dto";
+import {DeviceSessionViewModelDto} from "../controllers/dto/viewModels/deviceSessionViewModel.dto";
 import {AuthSessionInDb} from "../repositories/repository-interfaces/auth-session-in-db.interface";
 import {ObjectId} from 'mongodb';
 import {QueryRepository} from '../repositories/query.repository';

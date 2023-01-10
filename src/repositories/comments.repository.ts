@@ -1,7 +1,7 @@
 import {CommentModel} from "../adapters/dbAdapters";
 import {ObjectId} from "mongodb";
 import {CommentEntity} from "../services/entities/comment.entity";
-import {CommentInputModelDto} from "../controllers/dto/commentInputModel.dto";
+import {CommentInputModelDto} from "../controllers/dto/inputModels/commentInputModel.dto";
 import {LikesRepository} from './likes.repository';
 
 export class CommentsRepository {

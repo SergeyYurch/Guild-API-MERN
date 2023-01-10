@@ -1,5 +1,5 @@
-import {BlogViewModelDto} from "../controllers/dto/blogViewModel.dto";
-import {BlogInputModelDto} from "../controllers/dto/blogInputModel.dto";
+import {BlogViewModelDto} from "../controllers/dto/viewModels/blogViewModel.dto";
+import {BlogInputModelDto} from "../controllers/dto/inputModels/blogInputModel.dto";
 import {BlogEntity} from "./entities/blog.entity";
 import {BlogEditEntity} from "./entities/blog-edit.entity";
 import {QueryRepository} from "../repositories/query.repository";

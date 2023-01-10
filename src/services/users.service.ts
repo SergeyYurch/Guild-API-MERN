@@ -1,6 +1,6 @@
 import {UserEntity} from "./entities/user.entity";
 import {UsersRepository} from "../repositories/users.repository";
-import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
+import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
 import {
     generatePassHash, generateHashSalt,
     getConfirmationCode,

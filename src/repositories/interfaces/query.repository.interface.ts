@@ -1,10 +1,10 @@
-import {BlogViewModelDto} from "../../controllers/dto/blogViewModel.dto";
-import {PostViewModelDto} from "../../controllers/dto/postViewModel.dto";
+import {BlogViewModelDto} from "../../controllers/dto/viewModels/blogViewModel.dto";
+import {PostViewModelDto} from "../../controllers/dto/viewModels/postViewModel.dto";
 import {PaginatorDto} from "../../controllers/dto/paginator.dto";
-import {UserViewModelDto} from "../../controllers/dto/userViewModel.dto";
+import {UserViewModelDto} from "../../controllers/dto/viewModels/userViewModel.dto";
 import {WithId} from "mongodb";
 import {CommentEntity} from "../../services/entities/comment.entity";
-import {CommentViewModelDto} from "../../controllers/dto/commentViewModel.dto";
+import {CommentViewModelDto} from "../../controllers/dto/viewModels/commentViewModel.dto";
 
 
 export interface PaginatorOptionInterface {

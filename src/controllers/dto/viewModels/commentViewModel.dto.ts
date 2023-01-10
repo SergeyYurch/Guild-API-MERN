@@ -1,4 +1,4 @@
-import {LikesInfoViewModelInterface} from '../interfaces/likesInfoViewModel.interface';
+import {LikesInfoViewModelInterface} from '../../interfaces/likesInfoViewModel.interface';
 
 export interface CommentViewModelDto {
     id: string,

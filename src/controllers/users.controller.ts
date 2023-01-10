@@ -9,7 +9,7 @@ import {PaginatorOptionInterface} from "../repositories/interfaces/query.reposit
 import {parseQueryPaginator} from "../helpers/helpers";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
-import {UserInputModelDto} from "./dto/userInputModel.dto";
+import {UserInputModelDto} from "./dto/inputModels/userInputModel.dto";
 import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
 
 export const usersRouter = Router();

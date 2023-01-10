@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import {PaginatorOptionInterface} from "../repositories/interfaces/query.repository.interface";
 import bcrypt from "bcrypt";
 import {UserEntityWithIdInterface} from "../repositories/repository-interfaces/user-entity-with-id.interface";
-import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
+import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
 import {v4 as uuidv4} from "uuid";
 import add from "date-fns/add";
 import * as dotenv from "dotenv";

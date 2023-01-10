@@ -4,5 +4,4 @@ export interface PaginatorDto<T> {
     pageSize: number;
     totalCount: number;
     items: T[];
-
 }

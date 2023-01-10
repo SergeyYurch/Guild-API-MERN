@@ -7,11 +7,11 @@ import {QueryRepository} from "../repositories/query.repository";
 import {ObjectId} from "mongodb";
 import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
 import {CommentsService} from "../services/comments.service";
-import {CommentInputModelDto} from "./dto/commentInputModel.dto";
+import {CommentInputModelDto} from "./dto/inputModels/commentInputModel.dto";
 import {UsersService} from "../services/users.service";
 import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
 import {QueryCommentsRepository} from '../repositories/queryComments.repository';
-import {LikeInputModelDto} from './dto/likeInputModel.dto';
+import {LikeInputModelDto} from './dto/inputModels/likeInputModel.dto';
 
 export const commentsRouter = Router();
 
