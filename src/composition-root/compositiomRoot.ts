@@ -27,17 +27,17 @@ const blogsRepository = new BlogsRepository();
 const commentsRepository = new CommentsRepository();
 const likesRepository = new LikesRepository();
 const postsRepository = new PostsRepository();
-const queryRepository = new QueryRepository();
+export const queryRepository = new QueryRepository();
 const queryCommentsRepository = new QueryCommentsRepository();
 const testsRepository = new TestsRepository();
 const usersRepository = new UsersRepository();
 
 
-const authService = new AuthService(usersRepository, queryRepository, authSessionsRepository);
+export const authService = new AuthService(usersRepository, queryRepository, authSessionsRepository);
 const blogsService = new BlogsService(blogsRepository, queryRepository);
 const commentsService = new CommentsService(queryRepository, commentsRepository, likesRepository);
 const postsService = new PostsService(postsRepository, queryRepository);
-const usersService = new UsersService(usersRepository, queryRepository);
+export const usersService = new UsersService(usersRepository, queryRepository);
 
 export const authController = new AuthController(usersService, authService);
 export const blogsController = new BlogsController(blogsService, queryRepository, postsService);

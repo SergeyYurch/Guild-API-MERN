@@ -1,14 +1,8 @@
 import {Request, Response, NextFunction} from "express";
 import {body, validationResult} from 'express-validator';
 import {APIErrorResultModel} from "../controllers/dto/viewModels/apiErrorResultViewModel.dto";
-import {QueryRepository} from "../repositories/query.repository";
-import {UsersService,} from "../services/users.service";
-import {AuthService,} from "../services/auth.service";
 import {LikeStatus} from '../repositories/interfaces/likeStatus.type';
-
-const usersService = new UsersService();
-const authService = new AuthService();
-const queryRepository = new QueryRepository();
+import {authService, queryRepository, usersService} from '../composition-root/compositiomRoot';
 
 export const validatorMiddleware = {
     validateRegistrationConfirmationCodeModel: () => [
@@ -47,7 +41,7 @@ export const validatorMiddleware = {
                 if (!Object.values(LikeStatus).includes(likeStatus)) {
                     console.log(`throw new Error()`);
                     throw new Error();
-                };
+                }
                 console.log(`validateLikeInputModel is ok`);
                 return true;
 

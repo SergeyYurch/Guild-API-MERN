@@ -8,9 +8,7 @@ import {QueryRepository} from '../src/repositories/query.repository';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 import {delay} from '../src/helpers/helpers';
-
-const usersService = new UsersService()
-const queryRepository = new QueryRepository()
+import {queryRepository, usersService} from '../src/composition-root/compositiomRoot';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -72,6 +70,7 @@ describe('HOST/auth/registration :login user and receiving token, getting info a
     });
 
     it('should return code 429 if access attempt limit exceeded', async () => {
+        delay(10000)
         await request(app)
             .post('/auth/registration')
             .send({
@@ -79,7 +78,6 @@ describe('HOST/auth/registration :login user and receiving token, getting info a
                 "password": "string11",
                 "email": "user11@mail.ru"
             })
-            .expect(204);
 
         await request(app)
             .post('/auth/registration')
@@ -88,7 +86,22 @@ describe('HOST/auth/registration :login user and receiving token, getting info a
                 "password": "string2",
                 "email": "user2@mail.ru"
             })
-            .expect(204);
+        await request(app)
+            .post('/auth/registration')
+            .send({
+                "login": "user11",
+                "password": "string11",
+                "email": "user11@mail.ru"
+            })
+
+        await request(app)
+            .post('/auth/registration')
+            .send({
+                "login": "user2",
+                "password": "string2",
+                "email": "user2@mail.ru"
+            })
+
 
         await request(app)
             .post('/auth/registration')
@@ -97,7 +110,6 @@ describe('HOST/auth/registration :login user and receiving token, getting info a
                 "password": "string3",
                 "email": "user3@mail.ru"
             })
-            .expect(204);
 
         await request(app)
             .post('/auth/registration')

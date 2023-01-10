@@ -1,8 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import {jwtService} from "../utils/jwt-service";
-import {UsersService} from "../services/users.service";
+import {usersService} from '../composition-root/compositiomRoot';
 
-const usersService = new UsersService();
 export const authCheckBearerMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization) {
         return next();
