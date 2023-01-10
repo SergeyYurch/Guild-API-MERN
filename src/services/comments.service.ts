@@ -4,7 +4,7 @@ import {CommentEntity} from "./entities/comment.entity";
 import {CommentsRepository} from "../repositories/comments.repository";
 import {QueryRepository} from '../repositories/query.repository';
 import {LikesRepository} from '../repositories/likes.repository';
-import {LikeStatusType} from '../controllers/interfaces/likeStatus.type';
+import {LikeStatusType} from '../repositories/interfaces/likeStatus.type';
 
 
 

@@ -1,4 +1,4 @@
-import {LikesInfoViewModelInterface} from '../../controllers/interfaces/likesInfoViewModel.interface';
+import {LikesInfoViewModelInterface} from '../../controllers/dto/viewModels/likesInfoViewModel.interface';
 
 export interface CommentEntity {
     content: string;

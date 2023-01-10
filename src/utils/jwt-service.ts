@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import jwt from 'jsonwebtoken';
 import {
     UserInfoInRefreshToken
-} from "../controllers/interfaces/user-info-in-refresh-token.interface";
+} from "../helpers/interfaces/user-info-in-refresh-token.interface";
 import {ACCESS_TOKEN_LIFE_PERIOD, REFRESH_TOKEN_LIFE_PERIOD} from '../settings-const';
 import add from 'date-fns/add';
 

@@ -1,4 +1,4 @@
-import {LikeStatusType} from '../../controllers/interfaces/likeStatus.type';
+import {LikeStatusType} from '../../repositories/interfaces/likeStatus.type';
 
 export interface LikeEntity {
     userId: string;

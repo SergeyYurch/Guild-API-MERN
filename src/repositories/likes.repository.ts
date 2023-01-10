@@ -1,7 +1,7 @@
 import { LikeModel} from "../adapters/dbAdapters";
 import {LikeEntity} from '../services/entities/like.entity';
-import {LikeStatus, LikeStatusType} from '../controllers/interfaces/likeStatus.type';
-import {LikesInfoViewModelInterface} from '../controllers/interfaces/likesInfoViewModel.interface';
+import {LikeStatus, LikeStatusType} from './interfaces/likeStatus.type';
+import {LikesInfoViewModelInterface} from '../controllers/dto/viewModels/likesInfoViewModel.interface';
 
 export class LikesRepository {
 

@@ -1,10 +1,10 @@
 import {Request, Response, NextFunction} from "express";
 import {body, validationResult} from 'express-validator';
-import {APIErrorResultModel} from "../controllers/dto/apiErrorResult.dto";
+import {APIErrorResultModel} from "../controllers/dto/viewModels/apiErrorResultViewModel.dto";
 import {QueryRepository} from "../repositories/query.repository";
 import {UsersService,} from "../services/users.service";
 import {AuthService,} from "../services/auth.service";
-import {LikeStatus} from '../controllers/interfaces/likeStatus.type';
+import {LikeStatus} from '../repositories/interfaces/likeStatus.type';
 
 const usersService = new UsersService();
 const authService = new AuthService();
