@@ -2,12 +2,13 @@ import {Request, Response, NextFunction} from "express";
 import {body, validationResult} from 'express-validator';
 import {APIErrorResultModel} from "../controllers/dto/apiErrorResult.dto";
 import {QueryRepository} from "../repositories/query.repository";
-import {UsersService, } from "../services/users.service";
-import {AuthService, } from "../services/auth.service";
+import {UsersService,} from "../services/users.service";
+import {AuthService,} from "../services/auth.service";
+import {LikeStatus} from '../controllers/interfaces/likeStatus.type';
 
 const usersService = new UsersService();
 const authService = new AuthService();
-const queryRepository = new QueryRepository()
+const queryRepository = new QueryRepository();
 
 export const validatorMiddleware = {
     validateRegistrationConfirmationCodeModel: () => [
@@ -34,6 +35,24 @@ export const validatorMiddleware = {
                     if (!user) throw new Error();
                 })
             .withMessage('email is wrong')
+    ],
+    validateLikeInputModel: () => [
+        body('likeStatus')
+            .exists()
+            .withMessage('likeStatus is required')
+            .custom((likeStatus) => {
+                console.log(Object.values(LikeStatus));
+                console.log(likeStatus);
+                console.log(!Object.values(LikeStatus).includes(likeStatus));
+                if (!Object.values(LikeStatus).includes(likeStatus)) {
+                    console.log(`throw new Error()`);
+                    throw new Error();
+                };
+                console.log(`validateLikeInputModel is ok`);
+                return true;
+
+            })
+            .withMessage('likeStatus is wrong'),
     ],
     validateCommentInputModel: () => [
         body('content')
@@ -104,14 +123,14 @@ export const validatorMiddleware = {
         body('recoveryCode')
             .exists()
             .withMessage('recoveryCode is required')
-            // .custom(async (recoveryCode) => {
-            //     const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
-            //     if (!user) throw new Error();
-            //     if(!user.passwordRecoveryInformation) throw new Error();
-            //     if(user.passwordRecoveryInformation.recoveryCode!==recoveryCode) throw new Error()
-            //     if(user.passwordRecoveryInformation.expirationDate < new Date()) throw new Error()
-            // })
-            // .withMessage('recoveryCode is wrong')
+        // .custom(async (recoveryCode) => {
+        //     const user = await usersRepository.findUserByPasswordRecoveryCode(recoveryCode);
+        //     if (!user) throw new Error();
+        //     if(!user.passwordRecoveryInformation) throw new Error();
+        //     if(user.passwordRecoveryInformation.recoveryCode!==recoveryCode) throw new Error()
+        //     if(user.passwordRecoveryInformation.expirationDate < new Date()) throw new Error()
+        // })
+        // .withMessage('recoveryCode is wrong')
     ],
     validateBlogInputModel: () => [
         body('name')
@@ -169,6 +188,8 @@ export const validatorMiddleware = {
     ],
     validateResult: (req: Request, res: Response, next: NextFunction) => {
         const result = validationResult(req);
+        console.log('validateResult:');
+        console.log(result);
         const errorMessages: APIErrorResultModel = {
             errorsMessages: result.array({onlyFirstError: true}).map(e => ({
                 message: e.msg,
