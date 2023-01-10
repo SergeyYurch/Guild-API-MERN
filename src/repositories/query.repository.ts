@@ -1,6 +1,5 @@
 import {
     BlogModel,
-    CommentModel,
     PostModel,
     UserModel,
 } from "../adapters/dbAdapters";
@@ -12,78 +11,11 @@ import {PostViewModelDto} from "../controllers/dto/postViewModel.dto";
 import {PaginatorDto} from "../controllers/dto/paginator.dto";
 import {UserViewModelDto} from "../controllers/dto/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
-import {CommentViewModelDto} from "../controllers/dto/commentViewModel.dto";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
 import {usersRepository} from './users.repository';
 
+
 export class QueryRepository {
-    async getCommentById(id: string): Promise<CommentViewModelDto | null> {
-        const result = await CommentModel.findById(id);
-        if (!result) return null;
-        return {
-            id: result._id.toString(),
-            userId: result.userId.toString(),
-            userLogin: result.userLogin,
-            content: result.content,
-            createdAt: result.createdAt
-        };
-    }
-
-    async findAllCommentsByUserId(
-        userId: string,
-        paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<CommentViewModelDto>> {
-        console.log(`[queryRepository]: findAllCommentsByUserId:${userId}`);
-        const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-
-        const totalCount = await CommentModel.countDocuments({userId});
-        const result = await CommentModel.find({userId})
-            .sort({[sortBy]: sortDirection})
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize);
-
-        const items: CommentViewModelDto[] = result.map(e => ({
-            id: e._id.toString(),
-            content: e.content,
-            userId: e.userId.toString(),
-            userLogin: e.userLogin,
-            createdAt: e.createdAt
-        }));
-        return {
-            pagesCount: pagesCount(totalCount, pageSize),
-            page: pageNumber,
-            pageSize,
-            totalCount,
-            items
-        };
-    }
-
-    async findAllCommentsByPostId(
-        postId: string,
-        paginatorOption: PaginatorOptionInterface
-    ): Promise<PaginatorDto<CommentViewModelDto>> {
-        console.log(`[queryRepository]: findAllCommentsByPostId:${postId}`);
-        const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
-        const totalCount = await CommentModel.countDocuments({postId});
-        const result = await CommentModel.find({postId})
-            .sort({[sortBy]: sortDirection})
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize);
-        const items: CommentViewModelDto[] = result.map(e => ({
-            id: e._id.toString(),
-            content: e.content,
-            userId: e.userId.toString(),
-            userLogin: e.userLogin,
-            createdAt: e.createdAt
-        }));
-        return {
-            pagesCount: pagesCount(totalCount, pageSize),
-            page: pageNumber,
-            pageSize,
-            totalCount,
-            items
-        };
-    }
 
     async getAllBlogs(
         searchNameTerm: string | null = null,
@@ -248,4 +180,4 @@ export class QueryRepository {
         if (!result) return null;
         return usersRepository.parseUserInDbEntity(result);
     }
-};
+}
