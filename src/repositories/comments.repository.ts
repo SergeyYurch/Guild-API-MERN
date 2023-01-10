@@ -1,10 +1,16 @@
-import {CommentModel, commentsCollection} from "../adapters/dbAdapters";
+import {CommentModel} from "../adapters/dbAdapters";
 import {ObjectId} from "mongodb";
 import {CommentEntity} from "../services/entities/comment.entity";
 import {CommentInputModelDto} from "../controllers/dto/commentInputModel.dto";
+import {LikesRepository} from './likes.repository';
 
 export class CommentsRepository {
+    private likeRepository:LikesRepository;
+    constructor() {
+        this.likeRepository = new LikesRepository()
+    }
     async createNewUserComment(comment: CommentEntity): Promise<string | null> {
+        console.log(`[commentRepository]:  createNewUserComment ...`);
         const result = await CommentModel.create(comment);
         return result._id.toString() || null;
     }
