@@ -2,7 +2,6 @@ import {BlogEntity} from "../services/entities/blog.entity";
 import {BlogModel} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {BlogEditEntity} from "../services/entities/blog-edit.entity";
-import {BlogsRepositoryInterface} from "./interfaces/blogs.repository.interface";
 
 export class BlogsRepository {
 

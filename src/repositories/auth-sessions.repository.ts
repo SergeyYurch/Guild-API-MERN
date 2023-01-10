@@ -86,4 +86,4 @@ export class AuthSessionsRepository {
         });
         return result.acknowledged;
     }
-};
+}
