@@ -6,6 +6,9 @@ import {
 } from "../middlewares/refresh-token-validator.middleware";
 import {accessAttemptCounter} from "../middlewares/access-attempt-counter.middleware";
 import {authController} from '../composition-root/compositiomRoot';
+import {AuthController} from '../controllers/auth.controller';
+
+// const authController = appContainer.get(AuthController)
 
 export const authRouter = Router();
 
