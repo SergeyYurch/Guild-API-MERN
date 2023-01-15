@@ -12,10 +12,13 @@ import {PaginatorDto} from "../controllers/dto/paginator.dto";
 import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
 import {pagesCount} from "../helpers/helpers";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
-import {usersRepository} from './users.repository';
+import {injectable} from 'inversify';
+import {UsersRepository} from './users.repository';
 
-
+@injectable()
 export class QueryRepository {
+    constructor(protected usersRepository:UsersRepository) {
+    }
 
     async getAllBlogs(
         searchNameTerm: string | null = null,
@@ -178,6 +181,6 @@ export class QueryRepository {
         const result = await UserModel.findById(id);
         console.log(`[queryRepository]: getUserById ${id} `);
         if (!result) return null;
-        return usersRepository.parseUserInDbEntity(result);
+        return this.usersRepository.parseUserInDbEntity(result);
     }
 }
