@@ -5,8 +5,9 @@ import {CommentsRepository} from "../repositories/comments.repository";
 import {QueryRepository} from '../repositories/query.repository';
 import {LikesRepository} from '../repositories/likes.repository';
 import {LikeStatusType} from '../repositories/interfaces/likeStatus.type';
+import {injectable} from 'inversify';
 
-
+@injectable()
 export class CommentsService {
     constructor(
         protected queryRepository: QueryRepository,
