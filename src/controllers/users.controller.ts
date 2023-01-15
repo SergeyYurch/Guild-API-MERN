@@ -9,7 +9,9 @@ import {parseQueryPaginator} from "../helpers/helpers";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
 import {UserInputModelDto} from "./dto/inputModels/userInputModel.dto";
+import {injectable} from 'inversify';
 
+@injectable()
 export class UserController {
 
     constructor(
