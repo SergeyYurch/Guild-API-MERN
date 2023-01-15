@@ -1,7 +1,9 @@
 import {Request, Response} from "express";
 import {TestsRepository} from "../repositories/tests.repository";
+import {injectable} from 'inversify';
 
 
+@injectable()
 export class TestingController {
 
     constructor(
