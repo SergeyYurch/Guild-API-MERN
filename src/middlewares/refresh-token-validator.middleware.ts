@@ -1,6 +1,11 @@
 import {Request, Response, NextFunction} from 'express';
 import {jwtService} from "../utils/jwt-service";
+import {UsersService} from '../services/users.service';
+import {AuthService} from '../services/auth.service';
 import {authService, usersService} from '../composition-root/compositiomRoot';
+
+// const usersService = appContainer.get(UsersService)
+// const authService = appContainer.get(AuthService)
 
 export const refreshTokenValidator = async (req: Request, res: Response, next: NextFunction) => {
     // const refreshToken = req.cookies.refreshToken;
