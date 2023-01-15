@@ -2,13 +2,10 @@ import { LikeModel} from "../adapters/dbAdapters";
 import {LikeEntity} from '../services/entities/like.entity';
 import {LikeStatus, LikeStatusType} from './interfaces/likeStatus.type';
 import {LikesInfoViewModelInterface} from '../controllers/dto/viewModels/likesInfoViewModel.interface';
+import {injectable} from 'inversify';
 
+@injectable()
 export class LikesRepository {
-
-    // async createNewLike(like: LikeEntity): Promise<WithId<LikeEntity> | null> {
-    //     console.log(`[LikesRepository]:start createNewLike`);
-    //     return await LikeModel.create(like);
-    // }
 
     async updateLikeItem( commentId: string, userId: string, likeStatus: LikeStatusType): Promise<boolean> {
         console.log(`[LikesRepository]:start updateLike`);
