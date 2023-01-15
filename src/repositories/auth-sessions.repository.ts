@@ -2,8 +2,9 @@ import {AuthSessionEntity} from "../services/entities/auth-session.entity";
 import {SessionModel} from "../adapters/dbAdapters";
 import {ObjectId} from "mongodb";
 import {AuthSessionInDb} from "./repository-interfaces/auth-session-in-db.interface";
+import {injectable} from 'inversify';
 
-
+@injectable()
 export class AuthSessionsRepository {
     async cleanAuthSessionsCollection(): Promise<void> {
         //Чистим базу - Удаляем все заэкспайреные сессии
