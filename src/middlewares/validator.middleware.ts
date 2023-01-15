@@ -2,7 +2,15 @@ import {Request, Response, NextFunction} from "express";
 import {body, validationResult} from 'express-validator';
 import {APIErrorResultModel} from "../controllers/dto/viewModels/apiErrorResultViewModel.dto";
 import {LikeStatus} from '../repositories/interfaces/likeStatus.type';
+import {UsersService} from '../services/users.service';
+import {AuthService} from '../services/auth.service';
+import {QueryRepository} from '../repositories/query.repository';
+import {TYPES} from '../types/types';
 import {authService, queryRepository, usersService} from '../composition-root/compositiomRoot';
+
+// const usersService = appContainer.get(TYPES.UsersService)
+// const authService = appContainer.get(AuthService)
+// const queryRepository = appContainer.get(QueryRepository)
 
 export const validatorMiddleware = {
     validateRegistrationConfirmationCodeModel: () => [
