@@ -27,10 +27,10 @@ const blogsRepository = new BlogsRepository();
 const commentsRepository = new CommentsRepository();
 const likesRepository = new LikesRepository();
 const postsRepository = new PostsRepository();
-export const queryRepository = new QueryRepository();
 const queryCommentsRepository = new QueryCommentsRepository();
 const testsRepository = new TestsRepository();
 const usersRepository = new UsersRepository();
+export const queryRepository = new QueryRepository(usersRepository);
 
 
 export const authService = new AuthService(usersRepository, queryRepository, authSessionsRepository);
@@ -46,8 +46,4 @@ export const postsController = new PostsController(queryRepository, queryComment
 export const securityController = new SecurityController(authService);
 export const testingController = new TestingController(testsRepository);
 export const userController = new UserController(usersService, queryRepository);
-
-
-
-
 
