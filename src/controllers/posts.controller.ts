@@ -13,7 +13,9 @@ import {CommentsService} from "../services/comments.service";
 import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
 import {QueryCommentsRepository} from '../repositories/queryComments.repository';
+import {injectable} from 'inversify';
 
+@injectable()
 export class PostsController {
 
     constructor(
