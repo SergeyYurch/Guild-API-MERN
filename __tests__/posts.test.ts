@@ -1,8 +1,8 @@
 import request from 'supertest';
-import {app} from "../src/app";
-import {jwtService} from "../src/utils/jwt-service";
+import {App} from "../src/app";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import {applicationBoot} from '../src';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -14,26 +14,59 @@ const blog1 = {
     websiteUrl: 'https://youtube1.com'
 };
 
-describe('POST: /posts create new post', () => {
+let application: App;
+
+describe('Test[HOST]/posts', () => {
     let blogId = '';
+    let post1Id = '';
+    let post2Id = '';
+    let userId = '';
+    let accessToken = '';
+    let token_ = '';
+
     beforeAll(async () => {
+        //start app
+        const server = await applicationBoot;
+        application = server.app;
         await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
+
+        await request(application.app)
             .delete('/testing/all-data');
         //create blog
-        const newBlog1 = await request(app)
+        const newBlog1 = await request(application.app)
             .post('/blogs')
             .auth('admin', 'qwerty', {type: "basic"})
             .send(blog1);
         blogId = newBlog1.body.id;
+        const newUser1 = await request(application.app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                login: "user1",
+                password: "password1",
+                email: "email1@gmail.com"
+            });
+
+        const auth = await request(application.app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user1",
+                "password": "password1"
+            });
+
+        userId = newUser1.body.id;
+        accessToken = auth.body.accessToken;
+        token_ = auth.body.accessToken;
+
     });
 
-    /* Closing database connection after each test. */
     afterAll(async () => {
+        application.close();
         await mongoose.connection.close();
     });
-    it('should return code 401 "Unauthorized" for unauthorized request', async () => {
-        await request(app)
+
+    it('POST:[HOST]/posts: should return code 401 "Unauthorized" for unauthorized request', async () => {
+        await request(application.app)
             .post('/posts')
             .send({
                 title: 'post1',
@@ -43,32 +76,9 @@ describe('POST: /posts create new post', () => {
             })
             .expect(401);
     });
-    it('should return code 201 and newBlog for correct input data', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with field title for blog without title ', async () => {
 
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            })
-            .expect(201);
-
-        expect(newPost.body).toEqual({
-            id: expect.any(String),
-            title: 'post1',
-            shortDescription: 'shortDescription1',
-            content: 'content1',
-            blogId: blogId,
-            blogName: 'blog1',
-            createdAt: expect.any(String)
-        });
-    });
-    it('should return code 400 and error with field title for blog without title ', async () => {
-
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -85,9 +95,9 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-    it('should return code 400 and error with relevant field for incorrect title ', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with relevant field for incorrect title ', async () => {
 
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -105,9 +115,9 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-    it('should return code 400 and error with relevant field for blog without shortDescription ', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with relevant field for blog without shortDescription ', async () => {
 
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -135,9 +145,9 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-    it('should return code 400 and error with field content for blog without content ', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with field content for blog without content ', async () => {
 
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -154,9 +164,9 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-    it('should return code 400 and error with field blogId for blog without blogId ', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with field blogId for blog without blogId ', async () => {
 
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -173,9 +183,9 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-    it('should return code 400 and error with relevant field for incorrect blogId ', async () => {
+    it('POST:[HOST]/posts: should return code 400 and error with relevant field for incorrect blogId ', async () => {
 
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -193,42 +203,36 @@ describe('POST: /posts create new post', () => {
             }]
         });
     });
-});
+    it('POST:[HOST]/posts: should return code 201 and newBlog for correct input data', async () => {
 
-describe('GET: /posts get all posts', () => {
-
-    let blogId = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-
-        //create blog
-        const newBlog1 = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(blog1);
-        blogId = newBlog1.body.id;
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 200 and array with 2 elements', async () => {
-
-        //create  newPost1
-        await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
-                title: "title1",
+                title: 'title1',
                 shortDescription: 'shortDescription1',
                 content: 'content1',
                 blogId: blogId
-            });
+            })
+            .expect(201);
+
+        post1Id = newPost.body.id;
+
+        expect(newPost.body).toEqual({
+            id: expect.any(String),
+            title: 'title1',
+            shortDescription: 'shortDescription1',
+            content: 'content1',
+            blogId: blogId,
+            blogName: 'blog1',
+            createdAt: expect.any(String)
+        });
+    });
+
+    it('GET:[HOST]/posts: should return code 200 and array with 2 elements', async () => {
 
         //create newPost2
-        await request(app)
+        const newPost2 = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -237,8 +241,9 @@ describe('GET: /posts get all posts', () => {
                 content: 'content2',
                 blogId: blogId
             });
+        post2Id = newPost2.body.id;
 
-        const posts = await request(app)
+        const posts = await request(application.app)
             .get('/posts')
             .expect(200);
 
@@ -264,102 +269,26 @@ describe('GET: /posts get all posts', () => {
                 createdAt: expect.any(String)
             });
     });
-});
-
-describe('GET:/posts/{id} get post by ID', () => {
-    let id = '';
-    let blogId = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-        //create blog
-        const newBlog1 = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(blog1);
-        blogId = newBlog1.body.id;
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            });
-        id = newPost.body.id;
-
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 404 for incorrect ID', async () => {
-        await request(app)
+    it('GET:[HOST]/posts: should return code 404 for incorrect ID', async () => {
+        await request(application.app)
             .get('/posts/qwerty')
             .expect(404);
     });
-    it('should return code 200 and equal post for correct request', async () => {
-        const post = await request(app)
-            .get(`/posts/${id}`)
-            .expect(200);
 
-        expect(post.body).toEqual({
-            id: expect.any(String),
-            title: 'post1',
-            shortDescription: 'shortDescription1',
-            content: 'content1',
-            blogId: blogId,
-            blogName: 'blog1',
-            createdAt: expect.any(String)
-        });
-    });
-});
+    it('PUT:[HOST]/posts: should return code 401 "Unauthorized" for unauthorized request', async () => {
 
-describe('PUT:/posts/{id} edit post by ID', () => {
-    let id = '';
-    let blogId = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-        //create blog
-        const newBlog1 = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(blog1);
-        blogId = newBlog1.body.id;
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
+        await request(application.app)
+            .put(`/posts/${post1Id}`)
             .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            });
-        id = newPost.body.id;
-
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 401 "Unauthorized" for unauthorized request', async () => {
-
-        await request(app)
-            .put(`/posts/${id}`)
-            .send({
-                title: 'title1',
-                content: 'content1',
-                shortDescription: 'shortDescription1',
+                title: 'title3',
+                content: 'content3',
+                shortDescription: 'shortDescription3',
                 blogId: 'blogId'
             })
             .expect(401);
     });
-    it('should return code 404 for incorrect ID', async () => {
-        await request(app)
+    it('PUT:[HOST]/posts: should return code 404 for incorrect ID', async () => {
+        await request(application.app)
             .put('/posts/qwerty')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -370,10 +299,10 @@ describe('PUT:/posts/{id} edit post by ID', () => {
             })
             .expect(404);
     });
-    it('should return code 204 and equal post for correct request', async () => {
+    it('PUT:[HOST]/posts: should return code 204 and equal post for correct request', async () => {
 
-        await request(app)
-            .put(`/posts/${id}`)
+        await request(application.app)
+            .put(`/posts/${post1Id}`)
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
                 title: 'title3',
@@ -383,7 +312,9 @@ describe('PUT:/posts/{id} edit post by ID', () => {
             })
             .expect(204);
 
-        const post = await request(app).get(`/posts/${id}`);
+        const post = await request(application.app)
+            .get(`/posts/${post1Id}`);
+
         expect(post.body).toEqual({
             id: expect.any(String),
             title: 'title3',
@@ -394,121 +325,32 @@ describe('PUT:/posts/{id} edit post by ID', () => {
             createdAt: expect.any(String)
         });
     });
-});
 
-describe('DELETE:/posts/{id} delete', () => {
-    let id = '';
-    let blogId = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-
-        //create blog
-        const newBlog1 = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(blog1);
-        blogId = newBlog1.body.id;
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            });
-        id = newPost.body.id;
-
-
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 401 "Unauthorized" for unauthorized request', async () => {
-        await request(app)
-            .delete('/posts/1')
+    it('DELETE:[HOST]/posts: should return code 401 "Unauthorized" for unauthorized request', async () => {
+        await request(application.app)
+            .delete(`/posts/${post2Id}`)
             .expect(401);
     });
-    it('should return code 404 for incorrect ID', async () => {
-        await request(app)
-            .delete('/posts/qwerty')
+    it('DELETE:[HOST]/posts: should return code 404 for incorrect ID', async () => {
+        await request(application.app)
+            .delete(`/posts/id`)
             .auth('admin', 'qwerty', {type: "basic"})
             .expect(404);
     });
-    it('should return code 204 for correct request, and should return 404 for GET by id', async () => {
-        await request(app)
-            .delete(`/posts/${id}`)
+    it('DELETE:[HOST]/posts: should return code 204 for correct request, and should return 404 for GET by id', async () => {
+        await request(application.app)
+            .delete(`/posts/${post2Id}`)
             .auth('admin', 'qwerty', {type: "basic"})
             .expect(204);
 
-        await request(app)
-            .get(`/posts/${id}`)
+        await request(application.app)
+            .get(`/posts/${post2Id}`)
             .expect(404);
     });
-});
 
-describe('POST: /posts/{postId}/comments create new comment for post', () => {
-    let blogId = '';
-    let userId = '';
-    let postId = '';
-    let accessToken = '';
-    let token_ = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-        //create blog
-        const newBlog = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                name: 'blog1',
-                description: "description1",
-                websiteUrl: 'https://youtube1.com'
-            });
-        blogId = newBlog.body.id;
-
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            });
-
-        const newUser1 = await request(app)
-            .post('/users')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                login: "user1",
-                password: "password1",
-                email: "email1@gmail.com"
-            });
-
-        const auth = await request(app)
-            .post('/auth/login')
-            .send({
-                "loginOrEmail": "user1",
-                "password": "password1"
-            });
-
-        userId = newUser1.body.id;
-        postId = newPost.body.id;
-        accessToken = auth.body.accessToken;
-        token_ = auth.body.accessToken;
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 401 "Unauthorized" for unauthorized request', async () => {
-        await request(app)
-            .post(`/posts/${postId}/comments`)
+    it('POST:[HOST]/posts/{postId}/comments: should return code 401 "Unauthorized" for unauthorized request', async () => {
+        await request(application.app)
+            .post(`/posts/${post1Id}/comments`)
             .auth('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzkwZjI4MDRkZWJkZmNiOTZhODkxYjgiLCJpYXQiOjE2NzA2NzI4MzQsImV4cCI6MTY3MDcwODgzNH0.g5lv07SozaP8hMeQKfw5NrSXPW7-Lb55ZSpgWzqTU-U', {type: 'bearer'})
             //.auth(token_, {type: 'bearer'})
             .send({
@@ -516,20 +358,18 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
             })
             .expect(401);
     });
-
-    it('should return code 400  If the inputModel has incorrect values', async () => {
-        await request(app)
-            .post(`/posts/${postId}/comments`)
+    it('POST:[HOST]/posts/{postId}/comments: should return code 400  If the inputModel has incorrect values', async () => {
+        await request(application.app)
+            .post(`/posts/${post1Id}/comments`)
             .auth(accessToken, {type: "bearer"})
             .send({
                 content: 'content1',
             })
             .expect(400);
     });
+    it('POST:[HOST]/posts/{postId}/comments: should return code 404 If post with specified postId doesn\'t exists ', async () => {
 
-    it('should return code 404 If post with specified postId doesn\'t exists ', async () => {
-
-        await request(app)
+        await request(application.app)
             .post(`/posts/11111111111111/comments`)
             .auth(accessToken, {type: "bearer"})
             .send({
@@ -537,10 +377,9 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
             })
             .expect(404);
     });
-
-    it('should return code 201 and newly created post', async () => {
-        const comment = await request(app)
-            .post(`/posts/${postId}/comments`)
+    it('POST:[HOST]/posts/{postId}/comments: should return code 201 and newly created comment', async () => {
+        const comment = await request(application.app)
+            .post(`/posts/${post1Id}/comments`)
             .auth(accessToken, {type: 'bearer'})
             .send({
                 content: 'comment 1 comment 1 comment 1',
@@ -559,85 +398,18 @@ describe('POST: /posts/{postId}/comments create new comment for post', () => {
             },
         });
 
-    });
-});
-
-describe('GET: /posts/{postId}/comments get all comment for post', () => {
-    let blogId = '';
-    let userId = '';
-    let postId = '';
-    let accessToken = '';
-    let token_ = '';
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-        //create new blog
-        const newBlog = await request(app)
-            .post('/blogs')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                name: 'blog1',
-                description: "description1",
-                websiteUrl: 'https://youtube1.com'
-            });
-        blogId = newBlog.body.id;
-
-        //create new post
-        const newPost = await request(app)
-            .post('/posts')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                title: 'post1',
-                shortDescription: 'shortDescription1',
-                content: 'content1',
-                blogId: blogId
-            });
-        postId = newPost.body.id;
-
-        //create user in DB
-        const newUser1 = await request(app)
-            .post('/users')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send({
-                login: "user1",
-                password: "password1",
-                email: "email1@gmail.com"
-            });
-        userId = newUser1.body.id;
-
-        //authorisation user
-        const auth = await request(app)
-            .post('/auth/login')
-            .send({
-                "loginOrEmail": "user1",
-                "password": "password1"
-            });
-
-        accessToken = auth.body.accessToken;
-        //user creat two new comments
-        await request(app)
-            .post(`/posts/${postId}/comments`)
-            .auth(accessToken, {type: 'bearer'})
-            .send({
-                content: 'comment 1 comment 1 comment 1',
-            });
-
-        await request(app)
-            .post(`/posts/${postId}/comments`)
+        await request(application.app)
+            .post(`/posts/${post1Id}/comments`)
             .auth(accessToken, {type: 'bearer'})
             .send({
                 content: 'comment 2 comment 2 comment 2',
             });
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
+
     });
 
-    it('should return code 200 and body with comments', async () => {
-        const comment = await request(app)
-            .get(`/posts/${postId}/comments`)
+    it('GET:[HOST]/posts/{postId}/comments: should return code 200 and body with comments', async () => {
+        const comment = await request(application.app)
+            .get(`/posts/${post1Id}/comments`)
             .auth(accessToken, {type: 'bearer'})
             .expect(200);
         console.log(comment.body);
