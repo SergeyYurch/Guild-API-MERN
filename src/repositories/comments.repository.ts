@@ -3,7 +3,9 @@ import {ObjectId} from "mongodb";
 import {CommentEntity} from "../services/entities/comment.entity";
 import {CommentInputModelDto} from "../controllers/dto/inputModels/commentInputModel.dto";
 import {LikesRepository} from './likes.repository';
+import {injectable} from 'inversify';
 
+@injectable()
 export class CommentsRepository {
     private likeRepository:LikesRepository;
     constructor() {
