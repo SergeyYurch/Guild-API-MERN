@@ -1,7 +1,9 @@
 import {Router} from "express";
 import {refreshTokenValidator} from "../middlewares/refresh-token-validator.middleware";
+import {SecurityController} from '../controllers/security.controller';
 import {securityController} from '../composition-root/compositiomRoot';
 
+// const securityController = appContainer.get(SecurityController)
 export const securityRouter = Router();
 
 
