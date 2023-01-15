@@ -9,7 +9,9 @@ import {CommentInputModelDto} from "./dto/inputModels/commentInputModel.dto";
 import {UsersService} from "../services/users.service";
 import {QueryCommentsRepository} from '../repositories/queryComments.repository';
 import {LikeInputModelDto} from './dto/inputModels/likeInputModel.dto';
+import {injectable} from 'inversify';
 
+@injectable()
 export class CommentsController {
 
     constructor(
