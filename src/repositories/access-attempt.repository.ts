@@ -1,6 +1,8 @@
 import {AccessAttemptModel} from "../adapters/dbAdapters";
 import {sub} from "date-fns";
+import {injectable} from 'inversify';
 
+@injectable()
 export class AccessAttemptRepository {
     async clearOldAttempt() {
         console.log(`[accessAttemptRepository]:clearOldAttempt`);
