@@ -1,6 +1,9 @@
 import {Request, Response, NextFunction} from 'express';
 import {jwtService} from "../utils/jwt-service";
+import {UsersService} from '../services/users.service';
 import {usersService} from '../composition-root/compositiomRoot';
+
+// const usersService = appContainer.get(UsersService)
 
 export const authBearerMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     console.log(`[authBearerMiddleware] started...`);
@@ -13,13 +16,13 @@ export const authBearerMiddleware = async (req: Request, res: Response, next: Ne
     if (!userId) {
         console.log(`[authBearerMiddleware] access denied - no valid access token`);
         return res.sendStatus(401);
-    };
+    }
     const user = await usersService.getUserById(userId);
-    if(!user) {
+    if (!user) {
         console.log(`[authBearerMiddleware] access denied - do not find user in DB`);
         return res.sendStatus(401);
     }
-    req.user = user
+    req.user = user;
     return next();
 
 };
