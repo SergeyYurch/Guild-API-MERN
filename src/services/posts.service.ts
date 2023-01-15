@@ -4,8 +4,9 @@ import {PostEntity} from "./entities/post.entity";
 import {PostEditEntity} from "./entities/postEdit.entity";
 import {QueryRepository} from "../repositories/query.repository";
 import {PostsRepository} from "../repositories/posts.repository";
+import {injectable} from 'inversify';
 
-
+@injectable()
 export class PostsService {
     constructor(
         protected postsRepository: PostsRepository,
