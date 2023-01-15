@@ -36,6 +36,16 @@ export const jwtService = {
         );
     },
 
+    async createExpiredRefreshJWT(userId: string, deviceId: string, ip: string) {
+        const expiresIn = REFRESH_TOKEN_LIFE_PERIOD.amount + REFRESH_TOKEN_LIFE_PERIOD.units[0];
+        console.log('[jwtService]expiresIn refreshToken:' + expiresIn);
+        return jwt.sign(
+            {userId, deviceId, ip},
+            JWT_REFRESH_SECRET,
+            {expiresIn: '1s'}
+        );
+    },
+
     getLastActiveDateFromRefreshToken(refreshToken: string) {
         const payload: any = jwt.decode(refreshToken);
         return new Date(payload.iat * 1000);
