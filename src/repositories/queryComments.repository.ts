@@ -7,7 +7,9 @@ import {WithId} from 'mongodb';
 import {CommentEntity} from '../services/entities/comment.entity';
 import {LikesRepository} from './likes.repository';
 import {LikesInfoViewModelInterface} from '../controllers/dto/viewModels/likesInfoViewModel.interface';
+import {injectable} from 'inversify';
 
+@injectable()
 export class QueryCommentsRepository {
     private likeRepository: LikesRepository;
 
