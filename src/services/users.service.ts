@@ -10,7 +10,9 @@ import {
 import {emailManager} from "../managers/emailManager";
 import {UserEntityWithIdInterface} from '../repositories/repository-interfaces/user-entity-with-id.interface';
 import {QueryRepository} from '../repositories/query.repository';
+import {injectable} from 'inversify';
 
+@injectable()
 export class UsersService {
     constructor(
         protected usersRepository: UsersRepository,
