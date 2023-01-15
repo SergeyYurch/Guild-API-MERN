@@ -3,8 +3,10 @@ import {RequestWithId} from "../types/request.type";
 import {ObjectId} from "mongodb";
 import {AuthService} from "../services/auth.service";
 import {jwtService} from "../utils/jwt-service";
+import {injectable} from 'inversify';
 
 
+@injectable()
 export class SecurityController {
 
     constructor(
