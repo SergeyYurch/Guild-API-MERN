@@ -8,11 +8,15 @@ import {AuthService} from "../services/auth.service";
 import {getDeviceInfo, setRefreshTokenToCookie} from "../helpers/helpers";
 import {PasswordRecoveryInputModel} from './dto/inputModels/passwordRecoveryInputModel.dto';
 import {NewPasswordRecoveryInputModel} from './dto/inputModels/newPasswordRecoveryInputModel.dto';
+import {AuthControllerInterface} from './interfaces/auth-controller.interface';
+import {inject, injectable} from 'inversify';
+import {TYPES} from '../types/types';
 
-export class AuthController {
+@injectable()
+export class AuthController implements AuthControllerInterface{
     constructor(
-        protected usersService: UsersService,
-        protected authService: AuthService
+        @inject(TYPES.UsersService) protected usersService: UsersService,
+        @inject(TYPES.AuthService) protected authService: AuthService
     ) {
     }
 
