@@ -4,7 +4,9 @@ import {
     SessionModel, UserModel,
     PostModel,
 } from "../adapters/dbAdapters";
+import {injectable} from 'inversify';
 
+@injectable()
 export class TestsRepository {
     async dataBaseClear(): Promise<boolean>{
         console.log(`[repository]:start dataBaseClear`);
