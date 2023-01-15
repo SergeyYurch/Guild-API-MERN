@@ -4,7 +4,9 @@ import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
 import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
 import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
 import {postsController} from '../composition-root/compositiomRoot';
+import {PostsController} from '../controllers/posts.controller';
 
+// const postsController = appContainer.get(PostsController)
 export const postsRouter = Router();
 const {
     validatePostInputModel,
