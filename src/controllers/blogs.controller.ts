@@ -10,8 +10,9 @@ import {PaginatorOptionInterface} from "../repositories/interfaces/query.reposit
 import {parseQueryPaginator} from "../helpers/helpers";
 import {PostsService} from "../services/posts.service";
 import {ObjectId} from "mongodb";
+import {injectable} from 'inversify';
 
-
+@injectable()
 export class BlogsController {
     constructor(
         protected blogsService: BlogsService,
