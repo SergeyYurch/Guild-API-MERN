@@ -1,8 +1,9 @@
 import request from 'supertest';
-import {app} from "../src/app";
+import {App} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import {applicationBoot} from '../src';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -13,6 +14,8 @@ const blog1 = {
     description: "description1",
     websiteUrl: 'https://youtube1.com'
 };
+
+let application: App;
 
 describe('Test comments & liking comments endpoint', () => {
     let blogId = '';
@@ -25,11 +28,14 @@ describe('Test comments & liking comments endpoint', () => {
     let accessTokenUser2 = '';
     let token_ = '';
     beforeAll(async () => {
+        //start app
+        const server = await applicationBoot;
+        application = server.app;
         await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
-        await request(app)
+        await request(application.app)
             .delete('/testing/all-data');
         //create new blog
-        const newBlog = await request(app)
+        const newBlog = await request(application.app)
             .post('/blogs')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -40,7 +46,7 @@ describe('Test comments & liking comments endpoint', () => {
         blogId = newBlog.body.id;
 
         //create new post
-        const newPost = await request(app)
+        const newPost = await request(application.app)
             .post('/posts')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -52,7 +58,7 @@ describe('Test comments & liking comments endpoint', () => {
         postId = newPost.body.id;
 
         //create user in DB
-        const newUser1 = await request(app)
+        const newUser1 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -63,7 +69,7 @@ describe('Test comments & liking comments endpoint', () => {
         user1Id = newUser1.body.id;
 
         //create user in DB
-        const newUser2 = await request(app)
+        const newUser2 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -74,7 +80,7 @@ describe('Test comments & liking comments endpoint', () => {
         user2Id = newUser2.body.id;
 
         //authorisation user1
-        const auth1 = await request(app)
+        const auth1 = await request(application.app)
             .post('/auth/login')
             .send({
                 "loginOrEmail": "user1",
@@ -84,7 +90,7 @@ describe('Test comments & liking comments endpoint', () => {
         accessTokenUser1 = auth1.body.accessToken;
 
         //authorisation user2
-        const auth2 = await request(app)
+        const auth2 = await request(application.app)
             .post('/auth/login')
             .send({
                 "loginOrEmail": "user2",
@@ -96,14 +102,14 @@ describe('Test comments & liking comments endpoint', () => {
 
 
         //user1 creat two new comments
-        const comment1 =await request(app)
+        const comment1 =await request(application.app)
             .post(`/posts/${postId}/comments`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({
                 content: 'comment 1 comment 1 comment 1',
             });
 
-        const comment2 =await request(app)
+        const comment2 =await request(application.app)
             .post(`/posts/${postId}/comments`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({
@@ -116,18 +122,20 @@ describe('Test comments & liking comments endpoint', () => {
     });
     /* Closing database connection after each test. */
     afterAll(async () => {
+        application.close();
         await mongoose.connection.close();
+
     });
 
     it('GET:/comments/{id} - should return code 404 if commentId is wrong', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/63bbfbf52ea34ca5500f511c`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(404);
     });
 
     it('GET:/comments/{id} - should return code 200 and body with comment', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
@@ -151,14 +159,14 @@ describe('Test comments & liking comments endpoint', () => {
     // PUT
 
     it('PUT:/comments/{id} - should return code 401 for unauthorized user', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment1Id}`)
             .send({"content": "change comment change comment"})
             .expect(401);
     });
 
     it('PUT:/comments/{id} - should return code 403 If try edit the comment that is not your own', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment1Id}`)
             .auth(accessTokenUser2, {type: 'bearer'})
             .send({"content": "change comment change comment"})
@@ -166,7 +174,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('PUT:/comments/{id} - should return code 400 If the inputModel has incorrect values', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"content": "short"})
@@ -174,7 +182,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('PUT:/comments/{id} - should return code 204', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"content": "change comment change comment"})
@@ -182,7 +190,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body with changed comment', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
@@ -204,14 +212,14 @@ describe('Test comments & liking comments endpoint', () => {
 
     //DELETE
     it('DELETE:/comments/{id} - should return code 401 for unauthorized user', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .delete(`/comments/${comment1Id}`)
             .send({"content": "change comment change comment"})
             .expect(401);
     });
 
     it('DELETE:/comments/{id} - should return code 403 If try edit the comment that is not your own', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .delete(`/comments/${comment1Id}`)
             .auth(accessTokenUser2, {type: 'bearer'})
             .send({"content": "change comment change comment"})
@@ -219,7 +227,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('DELETE:/comments/{id} - should return code 204', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .delete(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"content": "change comment change comment"})
@@ -227,7 +235,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 404 for deleted comment', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment1Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(404);
@@ -237,7 +245,7 @@ describe('Test comments & liking comments endpoint', () => {
     //like
 
     it('PUT:/comments/{commentId}/like-status - should return code 400 If the inputModel has incorrect values', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment2Id}/like-status`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"likeStatus": "not"})
@@ -245,7 +253,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('PUT:/comments/{commentId}/like-status - SET LIKE USER1 for COMMENT2-  should return code 204', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment2Id}/like-status`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"likeStatus": "Like"})
@@ -253,7 +261,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body with liked comment own user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
@@ -274,7 +282,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body with liked comment & myStatus: "None" for other user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser2, {type: 'bearer'})
             .expect(200);
@@ -295,7 +303,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('PUT:/comments/{commentId}/like-status - SET DISLIKE USER1 for COMMENT2-  should return code 204', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment2Id}/like-status`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"likeStatus": "Dislike"})
@@ -303,7 +311,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body with disliked comment own user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
@@ -324,7 +332,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body with disliked comment & myStatus: "None" for other user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser2, {type: 'bearer'})
             .expect(200);
@@ -345,7 +353,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('PUT:/comments/{commentId}/like-status - CLEAR DISLIKE USER1 for COMMENT2-  should return code 204', async () => {
-        const commentChange = await request(app)
+        const commentChange = await request(application.app)
             .put(`/comments/${comment2Id}/like-status`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .send({"likeStatus": "None"})
@@ -353,7 +361,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body without LIKE comment own user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
@@ -374,7 +382,7 @@ describe('Test comments & liking comments endpoint', () => {
     });
 
     it('GET:/comments/{id} - should return code 200 and body without LIKE comment & myStatus: "None" for other user', async () => {
-        const comment = await request(app)
+        const comment = await request(application.app)
             .get(`/comments/${comment2Id}`)
             .auth(accessTokenUser1, {type: 'bearer'})
             .expect(200);
