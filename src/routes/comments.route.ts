@@ -3,7 +3,10 @@ import {validatorMiddleware} from "../middlewares/validator.middleware";
 import {authBearerMiddleware} from "../middlewares/authBearer.middleware";
 import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
 import {commentsController} from '../composition-root/compositiomRoot';
+import {CommentsController} from '../controllers/comments.controller';
 
+
+// const commentsController = appContainer.get(CommentsController)
 export const commentsRouter = Router();
 
 const {
