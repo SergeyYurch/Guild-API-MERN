@@ -2,7 +2,9 @@ import {BlogEntity} from "../services/entities/blog.entity";
 import {BlogModel} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {BlogEditEntity} from "../services/entities/blog-edit.entity";
+import {injectable} from 'inversify';
 
+@injectable()
 export class BlogsRepository {
 
     async createNewBlog(inputBlog: BlogEntity): Promise<WithId<BlogEntity> | null> {
