@@ -2,7 +2,9 @@ import {UserModel} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {UserEntity} from "../services/entities/user.entity";
 import {UserEntityWithIdInterface} from "./repository-interfaces/user-entity-with-id.interface";
+import {injectable} from 'inversify';
 
+@injectable()
 export class UsersRepository {
     parseUserInDbEntity(result: WithId<UserEntity>): UserEntityWithIdInterface {
         console.log(' parseUserInDbEntity');
@@ -126,5 +128,3 @@ export class UsersRepository {
         return result.acknowledged;
     }
 }
-
-export const usersRepository = new UsersRepository()
