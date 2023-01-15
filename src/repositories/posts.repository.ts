@@ -2,7 +2,9 @@ import {PostEntity} from "../services/entities/post.entity";
 import {PostModel} from "../adapters/dbAdapters";
 import {ObjectId, WithId} from "mongodb";
 import {PostEditEntity} from "../services/entities/postEdit.entity";
+import {injectable} from 'inversify';
 
+@injectable()
 export class PostsRepository {
 
     async createNewPost(inputPost: PostEntity): Promise<WithId<PostEntity> | null> {
