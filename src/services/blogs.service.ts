@@ -4,8 +4,9 @@ import {BlogEntity} from "./entities/blog.entity";
 import {BlogEditEntity} from "./entities/blog-edit.entity";
 import {QueryRepository} from "../repositories/query.repository";
 import {BlogsRepository} from "../repositories/blogs.repository";
+import {injectable} from 'inversify';
 
-
+@injectable()
 export class BlogsService {
     constructor(
         protected blogsRepository: BlogsRepository,
