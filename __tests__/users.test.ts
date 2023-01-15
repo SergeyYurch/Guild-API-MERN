@@ -1,10 +1,14 @@
 import request from 'supertest';
-import {app} from "../src/app";
+import {App} from "../src/app";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import {applicationBoot} from '../src';
+
 dotenv.config();
-const mongoUri = process.env.MONGO_URI
-const dbName = process.env.DB_NAME
+const mongoUri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
+
+let application: App;
 
 const user1 = {
     login: "user1",
@@ -17,40 +21,51 @@ const user2 = {
     email: "email2@gmail.com"
 };
 
-describe('POST: /users create new user', () => {
+describe('Test:[HOST]/users', () => {
+    let user1Id = '';
     beforeAll(async () => {
-        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
-        await request(app)
+        //start app
+        const server = await applicationBoot;
+        application = server.app;
+        await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
+
+        await request(application.app)
             .delete('/testing/all-data');
     });
     /* Closing database connection after each test. */
     afterAll(async () => {
+        application.close();
         await mongoose.connection.close();
     });
-    it('should return code 401 "Unauthorized" for unauthorized request', async () => {
-        console.log('????????????????????????????????');
-        await request(app)
+
+//post
+    it('POST: [HOST]/users: should return code 401 "Unauthorized" for unauthorized request', async () => {
+        await request(application.app)
             .post('/users')
             .send(user1)
             .expect(401);
     });
-    it('should return code 201 and new user for correct input data', async () => {
-        const newUser1 = await request(app)
+    it('POST: [HOST]/users: should return code 201 and new user for correct input data', async () => {
+        const newUser1 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
             .send(user1)
             .expect(201);
-
+        user1Id = newUser1.body.id;
         expect(newUser1.body).toEqual({
             id: expect.any(String),
             login: 'user1',
             email: 'email1@gmail.com',
             createdAt: expect.any(String)
         });
+        //create new user2
+        await request(application.app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send(user2);
     });
-    it('should return code 400 and error message for field login', async () => {
-        const newUser1 = await request(app)
+    it('POST: [HOST]/users: should return code 400 and error message for field login', async () => {
+        const newUser1 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -66,8 +81,8 @@ describe('POST: /users create new user', () => {
             }]
         });
     });
-    it('should return code 400 and error with field password', async () => {
-        const newUser1 = await request(app)
+    it('POST: [HOST]/users: should return code 400 and error with field password', async () => {
+        const newUser1 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
             .send({
@@ -83,42 +98,19 @@ describe('POST: /users create new user', () => {
             }]
         });
     });
-});
-
-describe('GET: /users get all users', () => {
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-
-        //create new user
-        await request(app)
-            .post('/users')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(user1);
-        //create new user
-        await request(app)
-            .post('/users')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(user2);
-
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 401 for unauthorized user', async () => {
-        await request(app)
+    it('POST: [HOST]/users: should return code 401 for unauthorized user', async () => {
+        await request(application.app)
             .post('/users')
             .send(user1)
             .expect(401);
     });
-    it('should return code 200 and array with 2 elements with default paginator', async () => {
-        const users = await request(app)
+//get
+    it('GET: [HOST]/users: should return code 200 and array with 2 elements with default paginator', async () => {
+        const users = await request(application.app)
             .get('/users')
             .expect(200);
 
-        expect(users.body.totalCount).toBe(2)
+        expect(users.body.totalCount).toBe(2);
 
         expect(users.body.items[0]).toEqual(
             {
@@ -136,8 +128,8 @@ describe('GET: /users get all users', () => {
                 createdAt: expect.any(String),
             });
     });
-    it('should return code 200 and array with 1 elements with queryParams:pageSize=1&sortDirection=asc', async () => {
-        const users = await request(app)
+    it('GET: [HOST]/users: should return code 200 and array with 1 elements with queryParams:pageSize=1&sortDirection=asc', async () => {
+        const users = await request(application.app)
             .get('/users?pageSize=1&sortDirection=asc')
             .expect(200);
         expect(users.body.items.length).toBe(1);
@@ -151,8 +143,8 @@ describe('GET: /users get all users', () => {
             });
 
     });
-    it('should return code 200 and array with 1 elements with queryParams:searchLoginTerm=r1', async () => {
-        const users = await request(app)
+    it('GET: [HOST]/users: should return code 200 and array with 1 elements with queryParams:searchLoginTerm=r1', async () => {
+        const users = await request(application.app)
             .get('/users?searchLoginTerm=r1')
             .expect(200);
 
@@ -167,46 +159,33 @@ describe('GET: /users get all users', () => {
             });
 
     });
-});
-
-describe('DELETE:/users/id delete user by Id', () => {
-    let id=''
-    beforeAll(async () => {
-        await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
-        await request(app)
-            .delete('/testing/all-data');
-
-        const newUser1 = await request(app)
-            .post('/users')
-            .auth('admin', 'qwerty', {type: "basic"})
-            .send(user1)
-            .expect(201);
-        id = newUser1.body.id;
-
-    });
-    /* Closing database connection after each test. */
-    afterAll(async () => {
-        await mongoose.connection.close();
-    });
-    it('should return code 401 for unauthorized user', async () => {
-        await request(app)
-            .delete(`/users/${id}`)
+//delete
+    it('DELETE: [HOST]/users: should return code 401 for unauthorized user', async () => {
+        await request(application.app)
+            .delete(`/users/${user1Id}`)
             .expect(401);
     });
-    it('should return code 404 for incorrect ID', async () => {
-        await request(app)
+    it('DELETE: [HOST]/users: should return code 404 for incorrect ID', async () => {
+        await request(application.app)
             .get('/users/qwe-ss---s-s-s-srty')
             .expect(404);
     });
-    it('should return code 204 for correct userId and user should be deleted', async () => {
-        await request(app)
-            .delete(`/users/${id}`)
+    it('DELETE: [HOST]/users: should return code 204 for correct userId and user should be deleted', async () => {
+
+        let users = await request(application.app)
+            .get('/users');
+
+        expect(users.body.totalCount).toBe(2);
+
+        await request(application.app)
+            .delete(`/users/${user1Id}`)
             .auth('admin', 'qwerty', {type: "basic"})
             .expect(204);
 
-        const users = await request(app)
-            .get('/users')
+        users = await request(application.app)
+            .get('/users');
 
-        expect(users.body.totalCount).toBe(0)
+        expect(users.body.totalCount).toBe(1);
     });
+
 });
