@@ -18,7 +18,9 @@ import {AuthSessionInDb} from "../repositories/repository-interfaces/auth-sessio
 import {ObjectId} from 'mongodb';
 import {QueryRepository} from '../repositories/query.repository';
 import {ResultInterface} from '../types/result.interface';
+import {injectable} from 'inversify';
 
+@injectable()
 export class AuthService {
     constructor(
         protected usersRepository: UsersRepository,
