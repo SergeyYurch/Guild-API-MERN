@@ -48,7 +48,7 @@ export class QueryRepository {
                 likesCount: likeInfo.likesCount,
                 dislikesCount: likeInfo.dislikesCount,
                 myStatus: likeInfo.myStatus,
-                newestLikes
+                newestLikes: newestLikes || []
             }
         };
     }

@@ -341,7 +341,7 @@ describe('Test[HOST]/posts', () => {
                     dislikesCount: 0,
                     likesCount: 0,
                     myStatus: "None",
-                    newestLikes: null,
+                    newestLikes: [],
                 }
             });
 
@@ -358,7 +358,7 @@ describe('Test[HOST]/posts', () => {
                     dislikesCount: 0,
                     likesCount: 0,
                     myStatus: "None",
-                    newestLikes: null,
+                    newestLikes: [],
                 }
             });
     });
@@ -420,7 +420,7 @@ describe('Test[HOST]/posts', () => {
                 dislikesCount: 0,
                 likesCount: 0,
                 myStatus: "None",
-                newestLikes: null,
+                newestLikes: [],
             }
         });
     });
@@ -593,12 +593,13 @@ describe('Test[HOST]/posts', () => {
 
 
         const post = await request(application.app)
-            .get(`/posts/${post1Id}`);
+            .get(`/posts/${post1Id}`)
+            .auth(accessToken4, {type: 'bearer'})
 
         expect(post.body.extendedLikesInfo).toEqual({
             likesCount: 3,
             dislikesCount: 1,
-            myStatus: 'None',
+            myStatus: 'Like',
             newestLikes: [
                 {
                     login: 'user4',
@@ -633,7 +634,52 @@ describe('Test[HOST]/posts', () => {
 
 
         const post = await request(application.app)
-            .get(`/posts/${post1Id}`);
+            .get(`/posts/${post1Id}`)
+            .auth(accessToken2, {type: 'bearer'})
+
+
+        expect(post.body.extendedLikesInfo).toEqual({
+            likesCount: 4,
+            dislikesCount: 0,
+            myStatus: 'Like',
+            newestLikes: [
+
+                {
+                    login: 'user4',
+                    userId: user4Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user3',
+                    userId: user3Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user2',
+                    userId: user2Id,
+                    addedAt: expect.any(String)
+                },
+            ]
+        });
+    });
+
+    it('PUT:[HOST]/posts/{postId}/like-status: should return code 204 and equal post after changing like-status', async () => {
+
+        //None like from user2
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken2, {type: 'bearer'})
+            .send({
+                likeStatus: 'None'
+            })
+            .expect(204);
+
+
+
+        const post = await request(application.app)
+            .get(`/posts/${post1Id}`)
+            .auth(accessToken2, {type: 'bearer'})
+
 
         expect(post.body.extendedLikesInfo).toEqual({
             likesCount: 4,
@@ -652,8 +698,8 @@ describe('Test[HOST]/posts', () => {
                     addedAt: expect.any(String)
                 },
                 {
-                    login: 'user2',
-                    userId: user2Id,
+                    login: 'user1',
+                    userId: user1Id,
                     addedAt: expect.any(String)
                 },
             ]
