@@ -25,18 +25,18 @@ export const accessAttemptRepository = new AccessAttemptRepository();
 const authSessionsRepository = new AuthSessionsRepository();
 const blogsRepository = new BlogsRepository();
 const commentsRepository = new CommentsRepository();
-const likesRepository = new LikesRepository();
+const likesRepository = new LikesRepository( );
 const postsRepository = new PostsRepository();
 const queryCommentsRepository = new QueryCommentsRepository();
 const testsRepository = new TestsRepository();
 const usersRepository = new UsersRepository();
-export const queryRepository = new QueryRepository(usersRepository);
+export const queryRepository = new QueryRepository(usersRepository, likesRepository);
 
 
 export const authService = new AuthService(usersRepository, queryRepository, authSessionsRepository);
 const blogsService = new BlogsService(blogsRepository, queryRepository);
 const commentsService = new CommentsService(queryRepository, commentsRepository, likesRepository);
-const postsService = new PostsService(postsRepository, queryRepository);
+const postsService = new PostsService(postsRepository, queryRepository, likesRepository);
 export const usersService = new UsersService(usersRepository, queryRepository);
 
 export const authController = new AuthController(usersService, authService);
