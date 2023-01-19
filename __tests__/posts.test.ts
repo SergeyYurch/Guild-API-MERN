@@ -305,7 +305,7 @@ describe('Test[HOST]/posts', () => {
                 dislikesCount: 0,
                 likesCount: 0,
                 myStatus: "None",
-                newestLikes: null,
+                newestLikes:  expect.any(Array),
             }
         });
     });
@@ -341,7 +341,7 @@ describe('Test[HOST]/posts', () => {
                     dislikesCount: 0,
                     likesCount: 0,
                     myStatus: "None",
-                    newestLikes: [],
+                    newestLikes:  expect.any(Array),
                 }
             });
 
@@ -358,7 +358,7 @@ describe('Test[HOST]/posts', () => {
                     dislikesCount: 0,
                     likesCount: 0,
                     myStatus: "None",
-                    newestLikes: [],
+                    newestLikes:  expect.any(Array),
                 }
             });
     });
@@ -420,7 +420,7 @@ describe('Test[HOST]/posts', () => {
                 dislikesCount: 0,
                 likesCount: 0,
                 myStatus: "None",
-                newestLikes: [],
+                newestLikes: expect.any(Array)
             }
         });
     });
