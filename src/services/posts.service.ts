@@ -5,12 +5,16 @@ import {PostEditEntity} from "./entities/postEdit.entity";
 import {QueryRepository} from "../repositories/query.repository";
 import {PostsRepository} from "../repositories/posts.repository";
 import {injectable} from 'inversify';
+import {LikeStatusType} from '../repositories/interfaces/likeStatus.type';
+import {LikesRepository} from '../repositories/likes.repository';
+
 
 @injectable()
 export class PostsService {
     constructor(
         protected postsRepository: PostsRepository,
-        protected queryRepository: QueryRepository
+        protected queryRepository: QueryRepository,
+        protected likesRepository: LikesRepository
     ) {
     }
 
@@ -31,7 +35,13 @@ export class PostsService {
             content: postInDb.content,
             blogId: postInDb.blogId,
             blogName: postInDb.blogName,
-            createdAt: postInDb.createdAt
+            createdAt: postInDb.createdAt,
+            extendedLikesInfo:{
+                likesCount:0,
+                dislikesCount:0,
+                myStatus: 'None',
+                newestLikes:null
+            }
         };
     }
 
@@ -51,5 +61,11 @@ export class PostsService {
 
     async deletePostById(id: string): Promise<boolean> {
         return this.postsRepository.deletePostById(id);
+    }
+
+    async changePostsLikeStatus(postId: string, userId: string, likeStatus: LikeStatusType): Promise<boolean> {
+        console.log(`[postsService] comment id:${postId} like/dislike`);
+        const login = (await this.queryRepository.getUserById(userId))!.accountData.login
+        return await this.likesRepository.updateLikeItem(postId, userId, login, likeStatus);
     }
 }
