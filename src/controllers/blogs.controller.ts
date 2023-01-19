@@ -59,13 +59,14 @@ export class BlogsController {
     async getPostsForBlog(req: RequestWithId, res: Response) {
         console.log(`[blogsController]:route(GET) /blogs/:id/posts - run...`);
         try {
-            const id = req.params.id;
-            console.log(`[blogsController]: ${(new Date()).toISOString()} - start GET:/${id}/posts`);
-            if (!ObjectId.isValid(id)) return res.sendStatus(404);
-            const blogIsExist = await this.queryRepository.getBlogById(id);
+            const blogId = req.params.id;
+            const userId = req.user?.id || null;
+            console.log(`[blogsController]: ${(new Date()).toISOString()} - start GET:/${blogId}/posts`);
+            if (!ObjectId.isValid(blogId)) return res.sendStatus(404);
+            const blogIsExist = await this.queryRepository.getBlogById(blogId);
             if (!blogIsExist) return res.sendStatus(404);
             const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
-            const result = await this.queryRepository.getPostsForBlog(id, paginatorOption);
+            const result = await this.queryRepository.getPostsForBlog(blogId, userId, paginatorOption);
             return res.status(200).json(result);
         } catch (error) {
             return res.sendStatus(500);
