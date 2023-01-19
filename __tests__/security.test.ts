@@ -1,11 +1,11 @@
 import request from 'supertest';
 import {App} from "../src/app";
 import {jwtService} from "../src/utils/jwt-service";
-import {sub} from 'date-fns';
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import {applicationBoot} from '../src';
 import {UserInfoInRefreshToken} from '../src/helpers/interfaces/user-info-in-refresh-token.interface';
+import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -146,8 +146,9 @@ describe('Tests for: [HOST]/security/', () => {
     });
 
     afterAll(async () => {
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+        application.close();
     });
 
     //Returns all devices with active sessions for current user
