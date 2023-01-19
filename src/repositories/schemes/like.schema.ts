@@ -3,7 +3,8 @@ import {LikeEntity} from '../../services/entities/like.entity';
 
 export const likeSchema = new Schema<LikeEntity>({
     userId: String,
-    commentId: String,
+    login: String,
+    targetId: String,
     likeStatus: String,
-    createdAt: String
+    addedAt: String
 });
