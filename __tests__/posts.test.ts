@@ -3,6 +3,7 @@ import {App} from "../src/app";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import {applicationBoot} from '../src';
+import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -20,9 +21,19 @@ describe('Test[HOST]/posts', () => {
     let blogId = '';
     let post1Id = '';
     let post2Id = '';
-    let userId = '';
-    let accessToken = '';
+    let user1Id = '';
+    let user2Id = '';
+    let user3Id = '';
+    let user4Id = '';
+    let accessToken1 = '';
+    let accessToken2 = '';
+    let accessToken3 = '';
+    let accessToken4 = '';
     let token_ = '';
+    let cookies = [];
+    let refreshToken_u1 = '';
+    let refreshToken_u2 = '';
+
 
     beforeAll(async () => {
         //start app
@@ -38,6 +49,9 @@ describe('Test[HOST]/posts', () => {
             .auth('admin', 'qwerty', {type: "basic"})
             .send(blog1);
         blogId = newBlog1.body.id;
+
+        // create users
+        //User1
         const newUser1 = await request(application.app)
             .post('/users')
             .auth('admin', 'qwerty', {type: "basic"})
@@ -47,16 +61,76 @@ describe('Test[HOST]/posts', () => {
                 email: "email1@gmail.com"
             });
 
-        const auth = await request(application.app)
+
+        const loginResult1 = await request(application.app)
             .post('/auth/login')
             .send({
                 "loginOrEmail": "user1",
                 "password": "password1"
             });
 
-        userId = newUser1.body.id;
-        accessToken = auth.body.accessToken;
-        token_ = auth.body.accessToken;
+        user1Id = newUser1.body.id;
+        accessToken1 = loginResult1.body.accessToken;
+        cookies = loginResult1.get('Set-Cookie');
+        refreshToken_u1 = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
+        token_ = loginResult1.body.accessToken;
+
+        //User2
+
+        const newUser2 = await request(application.app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                login: "user2",
+                password: "password2",
+                email: "email2@gmail.com"
+            });
+        const loginResult2 = await request(application.app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user2",
+                "password": "password2"
+            });
+        user2Id = newUser2.body.id;
+        cookies = loginResult2.get('Set-Cookie');
+        refreshToken_u2 = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
+        accessToken2 = loginResult2.body.accessToken;
+
+        //User3
+
+        const newUser3 = await request(application.app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                login: "user3",
+                password: "password3",
+                email: "email3@gmail.com"
+            });
+        const loginResult3 = await request(application.app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user3",
+                "password": "password3"
+            });
+        user3Id = newUser3.body.id;
+        accessToken3 = loginResult3.body.accessToken;
+
+        const newUser4 = await request(application.app)
+            .post('/users')
+            .auth('admin', 'qwerty', {type: "basic"})
+            .send({
+                login: "user4",
+                password: "password4",
+                email: "email4@gmail.com"
+            });
+        const loginResult4 = await request(application.app)
+            .post('/auth/login')
+            .send({
+                "loginOrEmail": "user4",
+                "password": "password4"
+            });
+        user4Id = newUser4.body.id;
+        accessToken4 = loginResult4.body.accessToken;
 
     });
 
@@ -225,7 +299,13 @@ describe('Test[HOST]/posts', () => {
             content: 'content1',
             blogId: blogId,
             blogName: 'blog1',
-            createdAt: expect.any(String)
+            createdAt: expect.any(String),
+            extendedLikesInfo: {
+                dislikesCount: 0,
+                likesCount: 0,
+                myStatus: "None",
+                newestLikes: null,
+            }
         });
     });
 
@@ -255,7 +335,13 @@ describe('Test[HOST]/posts', () => {
                 content: 'content1',
                 blogId: blogId,
                 blogName: 'blog1',
-                createdAt: expect.any(String)
+                createdAt: expect.any(String),
+                extendedLikesInfo: {
+                    dislikesCount: 0,
+                    likesCount: 0,
+                    myStatus: "None",
+                    newestLikes: null,
+                }
             });
 
         expect(posts.body.items[0]).toEqual(
@@ -266,7 +352,13 @@ describe('Test[HOST]/posts', () => {
                 content: 'content2',
                 blogId: blogId,
                 blogName: 'blog1',
-                createdAt: expect.any(String)
+                createdAt: expect.any(String),
+                extendedLikesInfo: {
+                    dislikesCount: 0,
+                    likesCount: 0,
+                    myStatus: "None",
+                    newestLikes: null,
+                }
             });
     });
     it('GET:[HOST]/posts: should return code 404 for incorrect ID', async () => {
@@ -322,7 +414,13 @@ describe('Test[HOST]/posts', () => {
             content: 'content3',
             blogId: blogId,
             blogName: 'blog1',
-            createdAt: expect.any(String)
+            createdAt: expect.any(String),
+            extendedLikesInfo: {
+                dislikesCount: 0,
+                likesCount: 0,
+                myStatus: "None",
+                newestLikes: null,
+            }
         });
     });
 
@@ -361,7 +459,7 @@ describe('Test[HOST]/posts', () => {
     it('POST:[HOST]/posts/{postId}/comments: should return code 400  If the inputModel has incorrect values', async () => {
         await request(application.app)
             .post(`/posts/${post1Id}/comments`)
-            .auth(accessToken, {type: "bearer"})
+            .auth(accessToken1, {type: "bearer"})
             .send({
                 content: 'content1',
             })
@@ -371,7 +469,7 @@ describe('Test[HOST]/posts', () => {
 
         await request(application.app)
             .post(`/posts/11111111111111/comments`)
-            .auth(accessToken, {type: "bearer"})
+            .auth(accessToken1, {type: "bearer"})
             .send({
                 content: 'comment1comment1comment1'
             })
@@ -380,7 +478,7 @@ describe('Test[HOST]/posts', () => {
     it('POST:[HOST]/posts/{postId}/comments: should return code 201 and newly created comment', async () => {
         const comment = await request(application.app)
             .post(`/posts/${post1Id}/comments`)
-            .auth(accessToken, {type: 'bearer'})
+            .auth(accessToken1, {type: 'bearer'})
             .send({
                 content: 'comment 1 comment 1 comment 1',
             })
@@ -388,7 +486,7 @@ describe('Test[HOST]/posts', () => {
         expect(comment.body).toEqual({
             id: expect.any(String),
             content: "comment 1 comment 1 comment 1",
-            userId: userId,
+            userId: user1Id,
             userLogin: "user1",
             createdAt: expect.any(String),
             likesInfo: {
@@ -400,7 +498,7 @@ describe('Test[HOST]/posts', () => {
 
         await request(application.app)
             .post(`/posts/${post1Id}/comments`)
-            .auth(accessToken, {type: 'bearer'})
+            .auth(accessToken1, {type: 'bearer'})
             .send({
                 content: 'comment 2 comment 2 comment 2',
             });
@@ -410,7 +508,7 @@ describe('Test[HOST]/posts', () => {
     it('GET:[HOST]/posts/{postId}/comments: should return code 200 and body with comments', async () => {
         const comment = await request(application.app)
             .get(`/posts/${post1Id}/comments`)
-            .auth(accessToken, {type: 'bearer'})
+            .auth(accessToken1, {type: 'bearer'})
             .expect(200);
         console.log(comment.body);
         expect(comment.body).toEqual(
@@ -423,7 +521,7 @@ describe('Test[HOST]/posts', () => {
                     {
                         id: expect.any(String),
                         content: "comment 2 comment 2 comment 2",
-                        userId: userId,
+                        userId: user1Id,
                         userLogin: "user1",
                         createdAt: expect.any(String),
                         likesInfo: {
@@ -435,7 +533,7 @@ describe('Test[HOST]/posts', () => {
                     {
                         id: expect.any(String),
                         content: "comment 1 comment 1 comment 1",
-                        userId: userId,
+                        userId: user1Id,
                         userLogin: "user1",
                         createdAt: expect.any(String),
                         likesInfo: {
@@ -448,4 +546,117 @@ describe('Test[HOST]/posts', () => {
             }
         );
     });
+
+    it('PUT:[HOST]/posts/{postId}/like-status: should return code 204 and equal post for correct request', async () => {
+
+        //LIKE from user1
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken1, {type: 'bearer'})
+            .send({
+                likeStatus: 'Like'
+            })
+            .expect(204);
+
+        await delay(1000)
+        //DISLIKE from user2
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken2, {type: 'bearer'})
+            .send({
+                likeStatus: 'Dislike'
+            })
+            .expect(204);
+
+        await delay(1000)
+
+        //LIKE from user3
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken3, {type: 'bearer'})
+            .send({
+                likeStatus: 'Like'
+            })
+            .expect(204);
+
+        await delay(1000)
+
+        //LIKE from user4
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken4, {type: 'bearer'})
+            .send({
+                likeStatus: 'Like'
+            })
+            .expect(204);
+
+
+        const post = await request(application.app)
+            .get(`/posts/${post1Id}`);
+
+        expect(post.body.extendedLikesInfo).toEqual({
+            likesCount: 3,
+            dislikesCount: 1,
+            myStatus: 'None',
+            newestLikes: [
+                {
+                    login: 'user4',
+                    userId: user4Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user3',
+                    userId: user3Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user1',
+                    userId: user1Id,
+                    addedAt: expect.any(String)
+                }
+            ]
+        });
+    });
+
+    it('PUT:[HOST]/posts/{postId}/like-status: should return code 204 and equal post after changing like-status', async () => {
+
+        //LIKE from user2
+        await request(application.app)
+            .put(`/posts/${post1Id}/like-status`)
+            .auth(accessToken2, {type: 'bearer'})
+            .send({
+                likeStatus: 'Like'
+            })
+            .expect(204);
+
+
+
+        const post = await request(application.app)
+            .get(`/posts/${post1Id}`);
+
+        expect(post.body.extendedLikesInfo).toEqual({
+            likesCount: 4,
+            dislikesCount: 0,
+            myStatus: 'None',
+            newestLikes: [
+
+                {
+                    login: 'user4',
+                    userId: user4Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user3',
+                    userId: user3Id,
+                    addedAt: expect.any(String)
+                },
+                {
+                    login: 'user2',
+                    userId: user2Id,
+                    addedAt: expect.any(String)
+                },
+            ]
+        });
+    });
+
 });
