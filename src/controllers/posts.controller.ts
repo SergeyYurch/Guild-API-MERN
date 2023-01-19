@@ -14,6 +14,8 @@ import {ObjectId} from "mongodb";
 import {UsersService} from "../services/users.service";
 import {QueryCommentsRepository} from '../repositories/queryComments.repository';
 import {injectable} from 'inversify';
+import {LikeInputModelDto} from './dto/inputModels/likeInputModel.dto';
+import {LikeStatusType} from '../repositories/interfaces/likeStatus.type';
 
 @injectable()
 export class PostsController {
@@ -91,5 +93,15 @@ export class PostsController {
         const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
         const result = await this.queryCommentsRepository.findAllCommentsByPostId(userId, postId, paginatorOption);
         return result ? res.status(200).json(result) : res.sendStatus(500);
+    }
+
+    async editPostLikeStatus(req: RequestWithIdAndBody<LikeInputModelDto>, res: Response) {
+        const postId = req.params.postId;
+        const userId = req.user!.id
+        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId))) return res.sendStatus(404);
+        const body = req.body;
+        const likeStatus: LikeStatusType = body.likeStatus
+        const result = await this.postsService.changePostsLikeStatus(postId, userId,likeStatus);
+        return result ? res.sendStatus(204) : res.sendStatus(500);
     }
 }
