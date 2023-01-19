@@ -14,8 +14,10 @@ export class TestingController {
     async clearDataBase(req: Request, res: Response) {
         const result = await this.testsRepository.dataBaseClear();
         if (result) {
+            console.log('[testingController] database clean - successful, send 204');
             res.sendStatus(204);
         } else {
+            console.log('[testingController] database clean - server error, send 500');
             res.sendStatus(500);
         }
     }
