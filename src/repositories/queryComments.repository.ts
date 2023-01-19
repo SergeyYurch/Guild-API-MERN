@@ -19,7 +19,7 @@ export class QueryCommentsRepository {
 
     async castToCommentViewModel(comment: WithId<CommentEntity>, userId: string | null): Promise<CommentViewModelDto> {
         const commentId = comment._id.toString();
-        const likesInfo: LikesInfoViewModelInterface = await this.likeRepository.getCommentLikesCount(commentId);
+        const likesInfo: LikesInfoViewModelInterface = await this.likeRepository.getLikesCount(commentId);
         if (userId) likesInfo.myStatus = await this.likeRepository.getUserLikeStatus(userId, commentId);
         return {
             id: commentId,
