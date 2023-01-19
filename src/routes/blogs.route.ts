@@ -3,16 +3,8 @@ import 'reflect-metadata';
 
 import {validatorMiddleware} from "../middlewares/validator.middleware";
 import {authBasicMiddleware} from "../middlewares/authBasic.middleware";
-// import {blogsController} from '../composition-root/compositiomRoot';
-import {BlogsController} from '../controllers/blogs.controller';
-import {TYPES} from '../types/types';
-import {BlogsService} from '../services/blogs.service';
-import {BlogsRepository} from '../repositories/blogs.repository';
-import {QueryRepository} from '../repositories/query.repository';
-import {PostsService} from '../services/posts.service';
-import {UsersRepository} from '../repositories/users.repository';
-import {PostsRepository} from '../repositories/posts.repository';
 import {blogsController} from '../composition-root/compositiomRoot';
+import {authCheckBearerMiddleware} from '../middlewares/authCheckBearer.middleware';
 
 // const blogsController = new BlogsController(
 //     new BlogsService(new BlogsRepository(), new QueryRepository(new UsersRepository())),
@@ -28,6 +20,7 @@ const {
 } = validatorMiddleware;
 
 blogsRouter.get('/',
+    authCheckBearerMiddleware,
     blogsController.getBlogs.bind(blogsController)
 );
 
@@ -39,11 +32,13 @@ blogsRouter.post('/',
 );
 
 blogsRouter.get('/:id',
+    authCheckBearerMiddleware,
     blogsController.getBlog.bind(blogsController)
 );
 
 
 blogsRouter.get('/:id/posts',
+    authCheckBearerMiddleware,
     blogsController.getPostsForBlog.bind(blogsController)
 );
 
