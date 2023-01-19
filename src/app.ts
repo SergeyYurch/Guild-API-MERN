@@ -10,7 +10,7 @@ import {usersRouter} from './routes/users.route';
 import {securityRouter} from './routes/security.route';
 import {commentsRouter} from './routes/comments.route';
 import {Server} from 'http';
-import {runDB} from './adapters/dbAdapters';
+import {connectDB} from './adapters/dbAdapters';
 import {injectable} from 'inversify';
 
 
@@ -47,7 +47,7 @@ export class App {
         this.app.set('trust proxy', true);
         this.useMiddleware();
         this.useRouters();
-        await runDB();
+        await connectDB();
         this.server = this.app.listen(this.port, () => {
             console.log(`[App] Server on post:${this.port} is start `);
         });
