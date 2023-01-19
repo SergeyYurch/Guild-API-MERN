@@ -24,7 +24,7 @@ export const SessionModel = mongoose.model('Session', sessionSchema)
 export const AccessAttemptModel = mongoose.model('AccessAttempt', accessAttemptSchema)
 export const LikeModel = mongoose.model('Like', likeSchema)
 
-export async function runDB() {
+export async function connectDB() {
     try{
         await mongoose.connect(mongoUri + '/' + dbName+'?retryWrites=true&w=majority');
         console.log("Mongo server connected successfully");
