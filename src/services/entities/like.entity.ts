@@ -2,7 +2,8 @@ import {LikeStatusType} from '../../repositories/interfaces/likeStatus.type';
 
 export interface LikeEntity {
     userId: string;
-    commentId:string;
+    login: string;
+    targetId:string;
     likeStatus: LikeStatusType;
-    createdAt:Date;
+    addedAt:Date;
 }
