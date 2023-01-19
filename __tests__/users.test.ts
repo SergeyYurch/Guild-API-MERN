@@ -3,6 +3,7 @@ import {App} from "../src/app";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import {applicationBoot} from '../src';
+import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -34,8 +35,9 @@ describe('Test:[HOST]/users', () => {
     });
     /* Closing database connection after each test. */
     afterAll(async () => {
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+        application.close();
     });
 
 //post
