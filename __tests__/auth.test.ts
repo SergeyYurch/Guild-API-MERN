@@ -102,8 +102,10 @@ describe('Testing route: [HOST]/auth/', () => {
 
     afterAll(async () => {
         //close app
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+
+        application.close();
     });
 
 
@@ -327,7 +329,7 @@ describe('Testing route: [HOST]/auth/', () => {
             cookies = loginResult.get('Set-Cookie');
             refreshToken = cookies[0].split(';').find(c => c.includes('refreshToken'))?.split('=')[1] || 'no token';
 
-
+            await delay(1000)
             await request(application.app)
                 .post('/auth/refresh-token')
                 .set('Cookie', `refreshToken=${expiredRefreshToken}`)
@@ -539,9 +541,11 @@ describe('Testing route: [HOST]/auth/', () => {
 
         });
 
-    it('POST:[HOST]/auth/new-password: should return code 200 when user connect with new password',
+    it('POST:[HOST]/auth/login: should return code 200 when user login with new password',
         async () => {
-        const result = await request(application.app)
+            await delay(10000);
+
+            const result = await request(application.app)
             .post('/auth/login')
             .send({
                 "loginOrEmail": "user1",
@@ -550,7 +554,7 @@ describe('Testing route: [HOST]/auth/', () => {
             .expect(200);
     });
 
-    it('POST:[HOST]/auth/new-password: should return code 401 when user connect with old password',
+    it('POST:[HOST]/auth/login: should return code 401 when user login with old password',
         async () => {
         const result = await request(application.app)
             .post('/auth/login')
