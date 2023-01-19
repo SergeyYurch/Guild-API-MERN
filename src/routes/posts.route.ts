@@ -12,7 +12,8 @@ const {
     validatePostInputModel,
     validateResult,
     validateBlogId,
-    validateCommentInputModel
+    validateCommentInputModel,
+    validateLikeInputModel
 } = validatorMiddleware;
 
 postsRouter.get('/', postsController.getPosts.bind(postsController));
@@ -54,4 +55,12 @@ postsRouter.post('/:postId/comments',
 postsRouter.get('/:postId/comments',
     authCheckBearerMiddleware,
     postsController.getCommentsForPost.bind(postsController)
+);
+
+postsRouter.put(
+    '/:postId/like-status',
+    authBearerMiddleware,
+    validateLikeInputModel(),
+    validateResult,
+    postsController.editPostLikeStatus.bind(postsController)
 );
