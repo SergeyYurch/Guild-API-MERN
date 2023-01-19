@@ -55,6 +55,7 @@ export class CommentsService {
 
     async changeLikeStatusComment(commentId: string, userId: string, likeStatus: LikeStatusType): Promise<boolean> {
         console.log(`[commentsService] comment id:${commentId} like/dislike`);
-        return await this.likesRepository.updateLikeItem(commentId, userId, likeStatus);
+        const login = (await this.queryRepository.getUserById(userId))!.accountData.login
+        return await this.likesRepository.updateLikeItem(commentId, userId, login, likeStatus);
     }
 }
