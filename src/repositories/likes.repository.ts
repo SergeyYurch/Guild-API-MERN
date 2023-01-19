@@ -47,12 +47,12 @@ export class LikesRepository {
         return myStatus || LikeStatus.none;
     }
 
-    async getNewestLikes(targetId: string): Promise<null | LikeDetailsViewModel[]> {
+    async getNewestLikes(targetId: string): Promise<LikeDetailsViewModel[]> {
         console.log(`[LikesRepository]:start getUserStatus`);
         const likes = await LikeModel.find({targetId, likeStatus: 'Like'}).sort({addedAt: -1}).limit(3);
         console.log('[LikesRepository]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         console.log(likes);
-        if (likes.length < 1) return null;
+        if (likes.length < 1) return [];
 
         const lastLikeUsers: LikeDetailsViewModel[] = [];
         for (let like of likes) {
