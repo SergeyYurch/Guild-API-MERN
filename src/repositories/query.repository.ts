@@ -26,7 +26,7 @@ export class QueryRepository {
     ) {
     }
 
-    async castPostViewModelDto(postInDb: WithId<PostEntity> | null, userId?: string): Promise<PostViewModelDto> {
+    async castPostViewModelDto(postInDb: WithId<PostEntity> | null, userId: string | null): Promise<PostViewModelDto> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllBlogs`);
         const {title, shortDescription, content, blogId, blogName, createdAt, _id} = postInDb!;
         const postId = _id.toString();
@@ -84,6 +84,7 @@ export class QueryRepository {
 
     async getPostsForBlog(
         blogId: string,
+        userId: string| null,
         paginatorOption: PaginatorOptionInterface
     ): Promise<PaginatorDto<PostViewModelDto>> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostsForBlog ${blogId}.`);
@@ -96,7 +97,7 @@ export class QueryRepository {
             .limit(pageSize);
         const items: PostViewModelDto[] = []
         for(let post of posts){
-            items.push(await this.castPostViewModelDto(post))
+            items.push(await this.castPostViewModelDto(post, userId))
         }
         return {
             pagesCount: pagesCount(totalCount, pageSize),
@@ -122,7 +123,8 @@ export class QueryRepository {
     }
 
     async getAllPosts(
-        paginatorOption: PaginatorOptionInterface
+        paginatorOption: PaginatorOptionInterface,
+        userId: string | null
     ): Promise<PaginatorDto<PostViewModelDto>> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllPosts`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
@@ -134,7 +136,7 @@ export class QueryRepository {
 
         const items: PostViewModelDto[] = []
         for(let post of posts){
-            items.push(await this.castPostViewModelDto(post))
+            items.push(await this.castPostViewModelDto(post, userId))
         }
         return {
             pagesCount: pagesCount(totalCount, pageSize),
@@ -145,7 +147,7 @@ export class QueryRepository {
         };
     }
 
-    async getPostById(postId: string, userId?: string): Promise<PostViewModelDto | null> {
+    async getPostById(postId: string, userId: string | null): Promise<PostViewModelDto | null> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostById`);
         const postInDb = await PostModel.findById(postId);
         console.log(`[queryRepository]:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`)
