@@ -4,6 +4,7 @@ import {jwtService} from "../src/utils/jwt-service";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import {applicationBoot} from '../src';
+import {delay} from '../src/helpers/helpers';
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -29,6 +30,7 @@ describe('Test comments & liking comments endpoint', () => {
     let token_ = '';
     beforeAll(async () => {
         //start app
+
         const server = await applicationBoot;
         application = server.app;
         await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
@@ -122,8 +124,9 @@ describe('Test comments & liking comments endpoint', () => {
     });
     /* Closing database connection after each test. */
     afterAll(async () => {
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+        application.close();
 
     });
 
