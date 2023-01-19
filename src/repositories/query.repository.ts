@@ -14,10 +14,43 @@ import {pagesCount} from "../helpers/helpers";
 import {UserEntityWithIdInterface} from './repository-interfaces/user-entity-with-id.interface';
 import {injectable} from 'inversify';
 import {UsersRepository} from './users.repository';
+import {LikesRepository} from './likes.repository';
+import {WithId} from 'mongodb';
+import {PostEntity} from '../services/entities/post.entity';
 
 @injectable()
 export class QueryRepository {
-    constructor(protected usersRepository:UsersRepository) {
+    constructor(
+        protected usersRepository: UsersRepository,
+        protected likesRepository: LikesRepository
+    ) {
+    }
+
+    async castPostViewModelDto(postInDb: WithId<PostEntity> | null, userId?: string): Promise<PostViewModelDto> {
+        console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllBlogs`);
+        const {title, shortDescription, content, blogId, blogName, createdAt, _id} = postInDb!;
+        const postId = _id.toString();
+        const likeInfo = await this.likesRepository.getLikesCount(postId);
+        if (userId) {
+            likeInfo.myStatus = await this.likesRepository.getUserLikeStatus(userId, postId);
+        }
+        const newestLikes = await this.likesRepository.getNewestLikes(postId);
+
+        return {
+            id: _id.toString(),
+            title,
+            shortDescription,
+            content,
+            blogId,
+            blogName,
+            createdAt,
+            extendedLikesInfo: {
+                likesCount: likeInfo.likesCount,
+                dislikesCount: likeInfo.dislikesCount,
+                myStatus: likeInfo.myStatus,
+                newestLikes
+            }
+        };
     }
 
     async getAllBlogs(
@@ -57,20 +90,14 @@ export class QueryRepository {
         const filter = {blogId: blogId};
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const totalCount = await PostModel.countDocuments(filter);
-        const result = await PostModel.find(filter)
+        const posts = await PostModel.find(filter)
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize);
-        const items: PostViewModelDto[] = result.map(e => ({
-                id: e._id.toString(),
-                title: e.title,
-                shortDescription: e.shortDescription,
-                content: e.content,
-                blogId: e.blogId,
-                blogName: e.blogName,
-                createdAt: e.createdAt
-            })
-        );
+        const items: PostViewModelDto[] = []
+        for(let post of posts){
+            items.push(await this.castPostViewModelDto(post))
+        }
         return {
             pagesCount: pagesCount(totalCount, pageSize),
             page: pageNumber,
@@ -100,20 +127,15 @@ export class QueryRepository {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getAllPosts`);
         const {sortBy, sortDirection, pageSize, pageNumber} = paginatorOption;
         const totalCount = await PostModel.countDocuments({});
-        const result = await PostModel.find({})
+        const posts = await PostModel.find({})
             .sort({[sortBy]: sortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize);
-        const items: PostViewModelDto[] = result.map(e => ({
-                id: e._id.toString(),
-                title: e.title,
-                shortDescription: e.shortDescription,
-                content: e.content,
-                blogId: e.blogId,
-                blogName: e.blogName,
-                createdAt: e.createdAt
-            })
-        );
+
+        const items: PostViewModelDto[] = []
+        for(let post of posts){
+            items.push(await this.castPostViewModelDto(post))
+        }
         return {
             pagesCount: pagesCount(totalCount, pageSize),
             page: pageNumber,
@@ -123,20 +145,13 @@ export class QueryRepository {
         };
     }
 
-    async getPostById(id: string): Promise<PostViewModelDto | null> {
+    async getPostById(postId: string, userId?: string): Promise<PostViewModelDto | null> {
         console.log(`[queryRepository]: ${(new Date()).toISOString()} - start getPostById`);
-        const result = await PostModel.findById(id);
-        if (!result) return null;
-        const {title, shortDescription, content, blogId, blogName, createdAt, _id} = result;
-        return {
-            id: _id.toString(),
-            title,
-            shortDescription,
-            content,
-            blogId,
-            blogName,
-            createdAt
-        };
+        const postInDb = await PostModel.findById(postId);
+        console.log(`[queryRepository]:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`)
+        console.log(postId);
+        if (!postInDb) return null
+        return this.castPostViewModelDto(postInDb, userId);
     }
 
     async getAllUsers(paginatorOption: PaginatorOptionInterface,
