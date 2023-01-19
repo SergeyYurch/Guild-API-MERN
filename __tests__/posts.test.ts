@@ -135,8 +135,9 @@ describe('Test[HOST]/posts', () => {
     });
 
     afterAll(async () => {
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+        application.close();
     });
 
     it('POST:[HOST]/posts: should return code 401 "Unauthorized" for unauthorized request', async () => {
