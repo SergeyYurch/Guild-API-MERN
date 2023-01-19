@@ -24,14 +24,14 @@ export class AuthController implements AuthControllerInterface{
         try {
             const {loginOrEmail, password} = req.body;
             console.log(`!!!![authRouter] login:${loginOrEmail}`);
-            const user = await this.authService.checkCredentials({loginOrEmail, password});
-            if (!user) return res.sendStatus(401);
+            const userId = await this.authService.checkCredentials({loginOrEmail, password});
+            if (!userId) return res.sendStatus(401);
             const {ip, title} = getDeviceInfo(req);
-            const loginParams = await this.authService.userLogin(user.id, ip, title);
-            if (!loginParams) return res.sendStatus(503);
-            setRefreshTokenToCookie(res, loginParams.refreshToken);
+            const tokens = await this.authService.userLogin(userId, ip, title);
+            if (!tokens) return res.sendStatus(503);
+            setRefreshTokenToCookie(res, tokens.refreshToken);
             return res.status(200)
-                .send({"accessToken": loginParams.accessToken});
+                .send({"accessToken": tokens.accessToken});
         } catch (error) {
             return res.sendStatus(500);
         }
