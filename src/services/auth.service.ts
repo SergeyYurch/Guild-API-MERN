@@ -38,14 +38,14 @@ export class AuthService {
         return true;
     }
 
-    async checkCredentials(credentials: LoginInputModel): Promise<UserViewModelDto | null> {
+    async checkCredentials(credentials: LoginInputModel): Promise<string | null> {
         const {loginOrEmail, password} = credentials;
         const user = await this.usersRepository.findUserByEmailOrLogin(loginOrEmail);
         if (!user) return null;
         const passwordHash = generatePassHash(password, user.accountData.passwordSalt);
         if (passwordHash !== user.accountData.passwordHash) return null;
         if (!user.emailConfirmation.isConfirmed) return null;
-        return parseUserViewModel(user);
+        return user.id;
     }
 
     async confirmEmail(code: string): Promise<boolean> {
