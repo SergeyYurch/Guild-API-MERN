@@ -30,15 +30,17 @@ export class PostsController {
     }
 
     async getPosts(req: Request, res: Response) {
+        const userId = req.user?.id || null;
         const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
-        const posts = await this.queryRepository.getAllPosts(paginatorOption);
+        const posts = await this.queryRepository.getAllPosts(paginatorOption, userId);
         return res.status(200).json(posts);
     }
 
     async getPost(req: RequestWithId, res: Response) {
-        const id = req.params.id;
-        if (!ObjectId.isValid(id)) return res.sendStatus(404);
-        const result = await this.queryRepository.getPostById(id);
+        const postId = req.params.id;
+        const userId = req.user?.id || null;
+        if (!ObjectId.isValid(postId)) return res.sendStatus(404);
+        const result = await this.queryRepository.getPostById(postId, userId);
         return result ? res.status(200).json(result) : res.sendStatus(404);
     }
 
@@ -50,7 +52,7 @@ export class PostsController {
 
     async editPost(req: RequestWithIdAndBody<PostInputModelDto>, res: Response) {
         const id = req.params.id;
-        if (!ObjectId.isValid(id) || !(await this.queryRepository.getPostById(id))) return res.sendStatus(404);
+        if (!ObjectId.isValid(id) || !(await this.queryRepository.getPostById(id, null))) return res.sendStatus(404);
         const body = req.body;
         const post: PostInputModelDto = {
             title: body.title,
@@ -64,7 +66,7 @@ export class PostsController {
 
     async deletePost(req: RequestWithId, res: Response) {
         const id = req.params.id;
-        if (!ObjectId.isValid(id) || !(await this.queryRepository.getPostById(id))) return res.sendStatus(404);
+        if (!ObjectId.isValid(id) || !(await this.queryRepository.getPostById(id, null))) return res.sendStatus(404);
         const result = await this.postsService.deletePostById(id);
         return result ? res.sendStatus(204) : res.sendStatus(500);
     }
@@ -77,7 +79,7 @@ export class PostsController {
         const userInDb = this.usersService.getUserById(userId);
         if (!userInDb) return res.sendStatus(401);
         console.log(`[postsController]: created new comment for post id:${postId} from user id:${userId}`);
-        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId))) {
+        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId, null))) {
             console.log(`[postsController]: wrong post id:${postId}`);
             return res.sendStatus(404);
         }
@@ -89,7 +91,7 @@ export class PostsController {
     async getCommentsForPost(req: RequestWithIdAndBody<CommentInputModelDto>, res: Response) {
         const userId = req.user?.id || null;
         const postId = req.params.postId;
-        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId))) return res.sendStatus(404);
+        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId, userId))) return res.sendStatus(404);
         const paginatorOption: PaginatorOptionInterface = parseQueryPaginator(req);
         const result = await this.queryCommentsRepository.findAllCommentsByPostId(userId, postId, paginatorOption);
         return result ? res.status(200).json(result) : res.sendStatus(500);
@@ -98,7 +100,7 @@ export class PostsController {
     async editPostLikeStatus(req: RequestWithIdAndBody<LikeInputModelDto>, res: Response) {
         const postId = req.params.postId;
         const userId = req.user!.id
-        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId))) return res.sendStatus(404);
+        if (!ObjectId.isValid(postId) || !(await this.queryRepository.getPostById(postId, null))) return res.sendStatus(404);
         const body = req.body;
         const likeStatus: LikeStatusType = body.likeStatus
         const result = await this.postsService.changePostsLikeStatus(postId, userId,likeStatus);
