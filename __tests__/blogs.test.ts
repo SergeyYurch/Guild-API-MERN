@@ -3,6 +3,7 @@ import {App} from "../src/app";
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import {applicationBoot} from '../src';
+import {delay} from '../src/helpers/helpers';
 
 
 dotenv.config();
@@ -36,6 +37,7 @@ describe('Test [HOST]/blogs', () => {
 
     beforeAll(async () => {
         //start app
+
         const server = await applicationBoot;
         application = server.app;
         await mongoose.connect(mongoUri + '/' + dbName + '?retryWrites=true&w=majority');
@@ -61,8 +63,10 @@ describe('Test [HOST]/blogs', () => {
 
     afterAll(async () => {
         //close app
-        application.close();
         await mongoose.connection.close();
+        await delay(1000)
+
+        application.close();
     });
     it('POST:[HOST]/blogs: should return code 401 "Unauthorized" for unauthorized request', async () => {
         await request(application.app)
