@@ -16,7 +16,9 @@ const {
     validateLikeInputModel
 } = validatorMiddleware;
 
-postsRouter.get('/', postsController.getPosts.bind(postsController));
+postsRouter.get('/',
+    authCheckBearerMiddleware,
+    postsController.getPosts.bind(postsController));
 
 postsRouter.post(
     '/',
