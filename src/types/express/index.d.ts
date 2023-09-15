@@ -1,4 +1,4 @@
-import {UserViewModelDto} from "../controllers/dto/viewModels/userViewModel.dto";
+import {UserViewModelDto} from "../../controllers/dto/viewModels/userViewModel.dto";
 
 declare global{
     declare namespace Express{

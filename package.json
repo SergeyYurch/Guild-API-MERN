@@ -13,6 +13,7 @@
     "test": "jest --runInBand --collectCoverage "
   },
   "dependencies": {
+    "@nestjs/mapped-types": "*",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cookiejar": "^2.1.2",

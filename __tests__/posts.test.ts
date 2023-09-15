@@ -619,7 +619,6 @@ describe('Test[HOST]/posts', () => {
             ]
         });
     });
-
     it('PUT:[HOST]/posts/{postId}/like-status: should return code 204 and equal post after changing like-status', async () => {
 
         //LIKE from user2
@@ -662,7 +661,6 @@ describe('Test[HOST]/posts', () => {
             ]
         });
     });
-
     it('PUT:[HOST]/posts/{postId}/like-status: should return code 204 and equal post after changing like-status', async () => {
 
         //None like from user2
