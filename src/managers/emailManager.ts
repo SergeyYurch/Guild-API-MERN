@@ -6,8 +6,7 @@ export const emailManager = {
     async sendEmailConfirmation (email:string, confirmationCode:string){
         console.log(`emailManager]:sendEmailConfirmation to ${email}`);
         const subject = 'email confirm'
-        const app_host = process.env.APP_HOST || 'http://localhost:5001'
-        const message = `<a href="${app_host}/auth/registration-confirmation\?code=${confirmationCode}">Confirm email</a>`
+        const message = `<a href="http://some-url?code=${confirmationCode}">Confirm email</a>`
         return await emailAdapter.sendEmail(email, subject, message)
     },
     async sendEmailPasswordRecoveryConfirmation (email:string, confirmationCode:string){
