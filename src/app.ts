@@ -12,6 +12,7 @@ import {commentsRouter} from './routes/comments.route';
 import {Server} from 'http';
 import {connectDB} from './adapters/dbAdapters';
 import {injectable} from 'inversify';
+import {} from 'express-winston'
 
 
 const port = process.env.PORT || 5001;
@@ -31,6 +32,8 @@ export class App {
         this.app.use(express.json());
         this.app.use(cookieParser());
         this.app.use(cors());
+        this.app.use(expressWinston);
+
     }
 
     useRouters(): void {
